@@ -1,67 +1,90 @@
 # Pi-CN
 
-为 [Pi](https://pi.dev) 的终端界面、命令行提示和更新公告提供简体中文，并支持恢复原界面。
+[![Checks](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml/badge.svg)](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Pi 1.0.0](https://img.shields.io/badge/Pi-1.0.0-blue.svg)](https://pi.dev)
 
-## 安装
+**English** | [简体中文](README.zh-CN.md)
 
-需要 npm 安装版 Pi，暂不支持独立二进制。Pi 安装目录需要可写。
+Simplified Chinese localization for [Pi](https://pi.dev)'s terminal UI, CLI messages, and native release history, with reversible patches and optional Chinese replies.
+
+## Requirements
+
+- **Pi 1.0.0 installed through npm**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
+- Standalone Pi binaries are not supported.
+
+Pi-CN modifies selected core files, including a version-checked uninstall hook, and keeps verified originals for recovery. Conflicting external changes are never silently overwritten.
+
+## Installation
 
 ```bash
 pi install git:github.com/SuperYzs/Pi-CN
 ```
 
-重新启动 Pi 后会自动应用汉化；首次应用后，再重启一次使核心界面生效。
+Restart Pi to apply localization automatically. After the first application, restart once more to load the localized core interface.
 
-## 使用
+Pi-CN is currently distributed through GitHub; it has not been published to npm.
 
-| 命令 | 作用 |
-|---|---|
-| `/zh-cn` | 查看当前状态和简要使用说明 |
-| `/zh-cn toggle` | 选择开启或关闭汉化 |
-| `/zh-cn replies` | 选择是否默认使用中文回复 |
-| `/zh-cn update` | 确认后更新插件 |
+## Usage
 
-开关设置使用 **↑/↓ 选择、Enter 确认、Esc 取消**，当前设置会标注“当前”。文件处理在后台进行，并显示处理状态；首次开启可能需要几秒。关闭汉化会恢复原文件并停止自动应用；切换后请重启 Pi。
+| Command | Description |
+| --- | --- |
+| `/zh-cn` | Show status, coverage, and essential help |
+| `/zh-cn toggle` | Choose whether localization is enabled |
+| `/zh-cn replies` | Choose whether replies default to Simplified Chinese |
+| `/zh-cn update` | Confirm and update a Git checkout |
 
-默认中文回复在汉化开启时生效；你仍可在对话中指定其他语言。更新公告直接使用 Pi 的 `/changelog` 查看。
+Use **↑/↓ to select, Enter to confirm, and Esc to cancel**. The current setting is listed first. File processing runs in the background with a status indicator; the first application may take a few seconds.
 
-## 更新
+Disabling localization restores the original core files and stops automatic application. Restart Pi after changing this setting.
+
+The Chinese-reply preference applies only while localization is enabled. Explicit requests for another language are respected. Disabling the preference removes the plugin's language instruction; other instructions may still request Chinese.
+
+Use Pi's built-in `/changelog` to read localized release notes.
+
+## Updating
 
 ```bash
 pi update git:github.com/SuperYzs/Pi-CN
 ```
 
-也可以使用 `/zh-cn update`。更新后运行 `/reload`，或重新启动 Pi；界面提示需要重启时，请完全退出后再启动。
+Git checkouts can also use `/zh-cn update`. Then run `/reload` or restart Pi; fully restart when prompted. Local directory installations use the files in that directory.
 
-升级 Pi 后若提示版本未适配，请先更新此插件；若仍未适配，需等待该版本的适配更新。固定标签或提交的安装不会自动切换到新版本。
+After upgrading Pi, update Pi-CN if the new Pi version is reported as unsupported. If support is not available yet, wait for a compatible plugin release. Pinned tags and commits do not automatically move to newer releases. Updates refuse dirty checkouts or unexpected branches rather than discarding changes.
 
-插件更新失败时，可退出 Pi 后使用上面的命令。仓库有本地改动或安装不跟随 `main` 分支时，插件不会覆盖你的改动。
+## Coverage
 
-## 支持范围
+- Supports **Pi 1.0.0** and all **282 releases** included in its changelog, from 0.10.0 to 1.0.0. Historical translations do not imply support for running those older Pi versions.
+- UI coverage is still partial. `/zh-cn` reports UI candidates and release-note coverage.
+- Commands, configuration keys, model identifiers, and code remain unchanged. Third-party extensions, remote service errors, and web content are outside the guaranteed scope.
+- Translations are included with the package. Normal use is offline; installation and updates require network access.
 
-- 当前支持 **Pi 1.0.0**，包含其随包提供的全部 **282 个版本**中文更新公告（0.10.0 至 1.0.0）。历史公告中文化不代表支持安装这些旧版 Pi。
-- 界面汉化仍在完善，部分界面文本会保留原文；界面候选和公告覆盖可通过 `/zh-cn` 查看。
-- 命令、配置键、模型名称和代码保持原样；第三方扩展、外部服务返回的错误和网页不在保证范围内。
-- 汉化内容随插件提供，正常使用不需要联网；安装和更新需要联网。
+## Uninstalling
 
-## 卸载与恢复
+**You do not need to turn localization off first.** Exit running Pi sessions, then run:
 
-1. 运行 `/zh-cn toggle`，选择 **关闭并恢复原界面**。
-2. 完全退出 Pi。
-3. 移除插件：
+```bash
+pi uninstall git:github.com/SuperYzs/Pi-CN
+```
 
-   ```bash
-   pi remove git:github.com/SuperYzs/Pi-CN
-   ```
+`pi remove` works as well. Pi-CN restores the original files before Pi removes the package and its settings entry. Recovery conflicts abort removal and leave the package installed.
 
-**请勿直接移除插件而跳过恢复步骤。** 仅移除包不会撤销已写入的汉化。
+Use the source shown by `pi list` if you installed from a local directory or another source. Add `--local` (`-l`) for a project installation and follow Pi's project-trust prompts. Removing a local source unregisters it; Pi does not delete your source directory.
 
-如果 Pi 无法启动，可以从终端恢复。将路径替换为你的实际安装位置：
+**Upgrading from an older Pi-CN release?** Restart Pi with this release once so the automatic recovery hook is applied before uninstalling. Manual directory deletion or `npm uninstall` outside Pi does not invoke this hook.
+
+## Recovery
+
+If Pi cannot start, restore from a terminal using your actual installation paths:
 
 ```bash
 node /path/to/Pi-CN/bin/pi-zh-cn.js restore --root /path/to/node_modules/@earendil-works/pi-coding-agent
 ```
 
-备份默认保存在 `~/.pi/agent/pi-zh-cn/`。**不要删除备份**，否则可能无法恢复。遇到文件被其他工具修改的提示时，插件会拒绝覆盖；先处理冲突或重装 Pi，不要强行替换文件。
+Backups and recovery files are stored in `~/.pi/agent/pi-zh-cn/` by default. **Do not delete them** while core files are patched. When recovery reports external changes, resolve the conflict or reinstall Pi; do not force unverified files over your installation.
 
-问题反馈：[GitHub Issues](https://github.com/SuperYzs/Pi-CN/issues)。本项目非 Pi 官方项目，采用 MIT 协议。
+## Feedback and license
+
+[Report a bug or request a feature](https://github.com/SuperYzs/Pi-CN/issues) · [Changelog](CHANGELOG.md) · [Contributing](https://github.com/SuperYzs/Pi-CN/blob/main/CONTRIBUTING.md)
+
+Unofficial Pi package. Licensed under [MIT](LICENSE).

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: User guide / 使用说明
+    url: https://github.com/SuperYzs/Pi-CN#readme
+    about: Check installation, supported Pi versions, and recovery instructions.

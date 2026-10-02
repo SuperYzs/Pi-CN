@@ -1,6 +1,6 @@
 // Run against a COPY of an installed npm Pi, never its original files.
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, cpSync, symlinkSync, readFileSync, readdirSync, existsSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { changelogEntries } from '../lib/changelog.js';
 import { Patcher } from '../lib/patcher.js';
 import { hash, readJSON, defaultDataDir } from '../lib/storage.js';
+import { linkPiDependencies } from './pi-fixture.mjs';
 
 const root = process.argv[2] || process.env.PI_ZH_CN_ROOT;
 if (!root) throw new Error('用法：npm run smoke -- /path/to/node_modules/@earendil-works/pi-coding-agent');
@@ -18,7 +19,7 @@ const extension = fileURLToPath(new URL('../extensions/index.ts', import.meta.ur
 try {
   mkdirSync(copy);
   for (const name of ['dist', 'package.json', 'CHANGELOG.md']) cpSync(join(original, name), join(copy, name), { recursive: true });
-  symlinkSync(join(original, 'node_modules'), join(copy, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+  linkPiDependencies(original, copy);
   // Rehydrate only the COPY from verified original backups when the live Pi is
   // already localized, so enabling/disabling still exercises real file writes.
   const upstream = new Patcher(original, defaultDataDir());

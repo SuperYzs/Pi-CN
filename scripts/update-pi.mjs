@@ -7,6 +7,7 @@ import { Patcher } from '../lib/patcher.js';
 import { hash, readJSON, writeJSON, atomicWrite } from '../lib/storage.js';
 import { changelogEntries, validateTranslation, normalizeChangelog, protectedValues } from '../lib/changelog.js';
 import { encodeSite } from '../lib/syntax.js';
+import { insertUninstallHook } from '../lib/uninstall-patch.js';
 import { CATALOG_FILE, loadCatalog } from '../lib/releases.js';
 
 const UPSTREAM = '@earendil-works/pi-coding-agent';
@@ -88,8 +89,14 @@ export function build(root, { allowPartialUI = false, maintenanceDir = join(proj
     if (changelogEntries(fullSource).length > 1) throw new Error('请补齐 history.zh.md 中的全部历史公告后再发布');
     announcements = compileChangelog(source, chinese);
   }
+  const uninstallTargets = readJSON(join(directory, 'uninstall.targets.json'), {});
+  for (const [name, digest] of Object.entries(uninstallTargets)) {
+    const original = p.original(name);
+    if (!(Array.isArray(digest) ? digest : [digest]).includes(hash(original))) throw new Error(`上游卸载入口已变化，请重新审阅：${name}`);
+    insertUninstallHook(original, 'file:///reviewed/recovery.mjs', { root: '/reviewed', dir: '/reviewed/backups', packageRoot: '/reviewed/package' });
+  }
   const catalog = loadCatalog(catalogFile);
-  catalog.versions[version] = { ui, ...announcements,
+  catalog.versions[version] = { ui, ...announcements, uninstallTargets,
     uiCandidates: inventory.size, uiTranslated: translated, completeUI: translated === inventory.size,
     note: '译文在插件维护/发布阶段生成，运行时只应用内置静态资源。' };
   writeJSON(catalogFile, catalog);
@@ -100,6 +107,7 @@ export function check(catalogFile = CATALOG_FILE, maintenanceDir = join(project,
   for (const [version, release] of Object.entries(catalog.versions)) {
     validateUI(release.ui);
     const directory = join(maintenanceDir, version);
+    if (JSON.stringify(release.uninstallTargets ?? {}) !== JSON.stringify(readJSON(join(directory, 'uninstall.targets.json'), {}))) throw new Error(`卸载入口摘要与已审阅资源不一致：${version}`);
     const source = readFileSync(join(directory, 'changelog.source.md'), 'utf8');
     const translated = release.changelog[hash(source)];
     validateTranslation(source, translated);

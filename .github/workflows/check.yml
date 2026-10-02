@@ -9,6 +9,21 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['22.19.0', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --ignore-scripts --omit=peer
+      - run: npm test
+      - run: npm run check
+      - run: npm pack --dry-run
+  native-uninstall:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,6 +31,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts --omit=peer
-      - run: npm test
-      - run: npm run check
-      - run: npm pack --dry-run
+      - name: Install supported Pi into a temporary directory
+        run: npm install --prefix "$RUNNER_TEMP/pi-host" --ignore-scripts --no-audit --no-fund @earendil-works/pi-coding-agent@1.0.0
+      - name: Verify core localization and restoration
+        run: npm run smoke -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent"
+      - name: Verify native uninstall and conflict handling
+        run: npm run smoke:uninstall -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent"

@@ -1,0 +1,19 @@
+name: Feature request / 功能建议
+description: Suggest an improvement or report a translation correction.
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: "English and 简体中文 are welcome. For translation corrections, include the original text, suggested wording, and Pi version."
+  - type: textarea
+    id: request
+    attributes:
+      label: Request or correction / 建议或译文修正
+      description: Explain the problem and the change you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / 补充信息
+      description: Include the relevant screen or command without exposing private data.

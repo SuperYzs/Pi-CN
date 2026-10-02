@@ -242,7 +242,7 @@ test('startup is TUI-only and reply guidance follows both switch settings', asyn
 });
 
 test('public docs and UI omit agent instructions and obsolete translation explanations', () => {
-  for (const path of ['README.md', 'CHANGELOG.md', 'lib/ui.js', 'lib/releases.js', 'bin/pi-zh-cn.js']) {
+  for (const path of ['README.md', 'README.zh-CN.md', 'CHANGELOG.md', 'CHANGELOG.zh-CN.md', 'CONTRIBUTING.md', 'lib/ui.js', 'lib/releases.js', 'bin/pi-zh-cn.js']) {
     assert.doesNotMatch(readFileSync(path, 'utf8'), /AGENTS\.md|\/home\/superyzs|release:push|prepare:pi|build:pi|实时.*翻译|运行时.*翻译|模型翻译|不调用模型|没有模型调用/);
   }
   const tracked = spawnSync('git', ['ls-files', '--', 'AGENTS.md', '**/AGENTS.md'], { encoding: 'utf8' });

@@ -1,33 +1,43 @@
-# 更新记录
+# Changelog
+
+**English** | [简体中文](CHANGELOG.zh-CN.md)
+
+## 0.5.0
+
+- Restore original core files automatically before native `pi uninstall` or `pi remove`; no manual localization switch is required.
+- Keep trust checks, installation-source handling, and removal under Pi's control. Recovery conflicts abort removal.
+- Verify uninstall entry-point hashes for each supported Pi version and retain standalone recovery files alongside backups.
+- Make the default README and changelog English, with linked Simplified Chinese documentation.
+- Add contribution guidance, issue templates, and native-uninstall integration checks.
 
 ## 0.4.0
 
-- 汉化开关在后台处理文件并显示进度状态，避免界面长时间无响应。
-- 重复开启和关闭后重新开启复用已验证的处理结果，减少重复解析。
-- 补齐 Pi 1.0.0 随包提供的全部 282 个版本中文公告，保留代码、命令、链接和版本日期。
-- 修复历史标题已汉化或使用 Windows 换行时公告译文无法匹配的问题。
-- `/zh-cn` 同时显示界面候选和公告覆盖。
-- 操作期间检测到文件修改或 Pi 升级时拒绝覆盖，保留原开关状态。
+- Process localization changes in a background worker with status feedback to keep the interface responsive.
+- Reuse verified patch plans for repeated application and re-enabling after restoration.
+- Include Chinese translations of all 282 releases shipped with Pi 1.0.0, preserving code, commands, links, and version dates.
+- Match release notes with previously localized headings or Windows line endings.
+- Show UI-candidate and release-note coverage in `/zh-cn`.
+- Refuse to overwrite files edited or upgraded during preparation; preserve settings on failure.
 
 ## 0.3.0
 
-- 使用说明精简为面向用户的安装、设置、更新与恢复步骤。
-- `/zh-cn` 统一显示状态和重要说明。
-- `/zh-cn toggle`、`/zh-cn replies` 改为键盘选择，支持确认和取消。
-- 关闭汉化时恢复原文件；设置取消或操作失败时保留原状态。
-- 移除多余命令别名；开启、关闭和重新应用汉化请使用 `/zh-cn toggle`。
+- Simplify installation, settings, update, and recovery documentation.
+- Consolidate status and essential help under `/zh-cn`.
+- Use keyboard selectors with confirmation and cancellation for `/zh-cn toggle` and `/zh-cn replies`.
+- Restore original files when localization is disabled; preserve settings on cancellation or failure.
+- Remove redundant command aliases; use `/zh-cn toggle` to enable, disable, or reapply localization.
 
 ## 0.2.0
 
-- 提供随包中文界面资源和 Pi 1.0.0 的完整本版中文公告。
-- 未适配的 Pi 版本会提示更新插件。
-- 增加 `/zh-cn update`，安全更新插件。
-- 保留备份与恢复能力。
+- Include Chinese UI resources and the complete current-release announcement for Pi 1.0.0.
+- Prompt users to update the plugin for unsupported Pi versions.
+- Add `/zh-cn update` for safe plugin updates.
+- Preserve backup and recovery capabilities.
 
 ## 0.1.1
 
-- 修复汉化操作报错。
+- Fix a localization operation error.
 
 ## 0.1.0
 
-- 初始版本，提供界面汉化与备份恢复。
+- Initial release with UI localization and backup-based recovery.
