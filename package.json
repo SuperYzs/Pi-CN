@@ -1,6 +1,6 @@
 {
   "name": "pi-zh-cn",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Pi 核心界面及更新公告离线中文化：按 Pi 版本内置译文、可恢复补丁与 GitHub 更新",
   "type": "module",
   "license": "MIT",
@@ -12,7 +12,7 @@
   "scripts": {
     "test": "node --test",
     "smoke": "node scripts/smoke.mjs",
-    "check": "node --check bin/pi-zh-cn.js && node --check extensions/index.ts && node --check lib/patcher.js && node --check lib/storage.js && node --check lib/syntax.js && node --check lib/changelog.js && node --check lib/releases.js && node --check lib/update.js && node --check scripts/update-pi.mjs && node scripts/update-pi.mjs check",
+    "check": "node --check bin/pi-zh-cn.js && node --check extensions/index.ts && node --check lib/patcher.js && node --check lib/storage.js && node --check lib/syntax.js && node --check lib/changelog.js && node --check lib/releases.js && node --check lib/update.js && node --check lib/ui.js && node --check scripts/push.mjs && node --check scripts/update-pi.mjs && node scripts/update-pi.mjs check",
     "prepare:pi": "node scripts/update-pi.mjs prepare",
     "build:pi": "node scripts/update-pi.mjs build",
     "release:push": "node scripts/push.mjs"

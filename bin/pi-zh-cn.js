@@ -4,15 +4,14 @@ import { delimiter, join } from 'node:path';
 import { Patcher, discoverPi } from '../lib/patcher.js';
 import { defaultDataDir, readJSON, writeJSON } from '../lib/storage.js';
 
-const HELP = `用法：pi-zh-cn <apply|restore|status|inventory> [--root <Pi安装目录>] [--data-dir <数据目录>]
+const HELP = `用法：pi-zh-cn <apply|restore|status> [--root <Pi安装目录>] [--data-dir <数据目录>]
 
-apply      用插件内置词库和版本公告应用补丁（不调用模型），启用自动补丁
-restore    恢复汉化前的文件并停用自动补丁；卸载 package 前必须执行
+apply      开启汉化，应用界面与公告
+restore    关闭汉化并恢复原文件；卸载前请先执行
 status     查看候选文本覆盖情况、安装目录和备份信息
-inventory  输出可翻译显示文本及其源文件（JSON）
 
-新 Pi 版本请先更新插件：pi update git:github.com/SuperYzs/Pi-CN
-也可在交互界面运行 /zh-cn update；旧的实时模型翻译入口已移除。
+交互设置与说明：/zh-cn
+更新插件：pi update git:github.com/SuperYzs/Pi-CN
 修改核心界面后需要完全退出并重启 Pi。
 `;
 
@@ -21,7 +20,7 @@ try {
   if (!args.length || args.includes('--help') || args.includes('-h')) { console.log(HELP); }
   else {
     const action = args.shift();
-    if (!['apply', 'restore', 'status', 'inventory'].includes(action)) throw new Error(`未知操作：${action}`);
+    if (!['apply', 'restore', 'status'].includes(action)) throw new Error(`未知操作：${action}`);
     let root, dataDir = defaultDataDir();
     while (args.length) {
       const option = args.shift();
@@ -43,7 +42,6 @@ try {
     const configFile = join(p.dataDir, 'config.json');
     const config = readJSON(configFile, { enabled: true, chineseReplies: true });
     if (action === 'status') console.log(JSON.stringify(p.status(), null, 2));
-    else if (action === 'inventory') console.log(JSON.stringify([...p.inventory()].map(([text, files]) => ({ text, files })), null, 2));
     else {
       const result = action === 'apply' ? p.apply() : p.restore();
       writeJSON(configFile, { ...config, enabled: action === 'apply' });

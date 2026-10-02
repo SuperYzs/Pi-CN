@@ -237,7 +237,7 @@ test('old model caches are preserved but do not override bundled resources', (t)
 });
 
 test('extension contains no runtime model translation path', () => {
-  const extension = readFileSync('extensions/index.ts', 'utf8');
+  const extension = readFileSync('extensions/index.ts', 'utf8') + readFileSync('lib/ui.js', 'utf8');
   assert.doesNotMatch(extension, /modelRegistry|streamSimple|completeSimple|translateBatch|translateUI|translateChangelog/);
   assert.match(extension, /updatePackage/);
 });
