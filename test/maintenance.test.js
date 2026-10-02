@@ -66,8 +66,8 @@ test('compiler refuses stale source snapshots rather than translating at runtime
 });
 
 test('repository matching accepts only the requested GitHub repository', () => {
-  for (const remote of ['https://github.com/SuperYzs/Pi-CN.git', 'git@github.com:SuperYzs/Pi-CN.git', 'ssh://git@github.com/SuperYzs/Pi-CN']) assert.equal(isProjectRemote(remote), true);
-  for (const remote of ['https://github.com/Someone/Pi-CN', 'https://evil.test/SuperYzs/Pi-CN', 'https://token@github.com/SuperYzs/Pi-CN', 'https://github.com/SuperYzs/Pi-CN-malicious']) assert.equal(isProjectRemote(remote), false);
+  for (const remote of ['https://github.com/SuperYzs/Pi-CN.git', 'git@github.com:SuperYzs/Pi-CN.git', 'ssh://git@github.com/SuperYzs/Pi-CN', 'ssh://git@ssh.github.com:443/SuperYzs/Pi-CN.git']) assert.equal(isProjectRemote(remote), true);
+  for (const remote of ['https://github.com/Someone/Pi-CN', 'https://evil.test/SuperYzs/Pi-CN', 'https://token@github.com/SuperYzs/Pi-CN', 'https://github.com/SuperYzs/Pi-CN-malicious', 'ssh://git@ssh.github.com:443/Other/Pi-CN.git']) assert.equal(isProjectRemote(remote), false);
 });
 
 function gitExecutor({ remote = 'https://github.com/SuperYzs/Pi-CN.git', dirty = '', branch = 'main' } = {}) {

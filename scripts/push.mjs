@@ -9,7 +9,8 @@ function run(command, args, capture = false) {
   return result.stdout?.trim();
 }
 try {
-  if (!isProjectRemote(run('git', ['remote', 'get-url', 'origin'], true))) throw new Error('origin 必须指向 SuperYzs/Pi-CN');
+  if (!isProjectRemote(run('git', ['remote', 'get-url', 'origin'], true))
+      || !isProjectRemote(run('git', ['remote', 'get-url', '--push', 'origin'], true))) throw new Error('origin 的读取和推送地址都必须指向 SuperYzs/Pi-CN');
   if (run('git', ['branch', '--show-current'], true) !== 'main') throw new Error('只允许发布 main 分支');
   if (run('git', ['status', '--porcelain'], true)) throw new Error('请先审阅并提交改动；发布脚本不会自动提交用户文件');
   run('npm', ['test']);
