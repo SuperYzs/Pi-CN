@@ -23,7 +23,7 @@ function fixture(t, initial = { enabled: false, chineseReplies: true }) {
   const p = new Patcher(root, dataDir);
   const commands = new Map();
   const events = new Map();
-  const notifications = [], dialogs = [], labels = [], executions = [];
+  const notifications = [], dialogs = [], labels = [], executions = [], statuses = [];
   let choose = () => undefined;
   let confirm = false;
   let idle = 0;
@@ -40,10 +40,11 @@ function fixture(t, initial = { enabled: false, chineseReplies: true }) {
       select: async (title, options) => { dialogs.push({ title, options }); return choose(options); },
       confirm: async (title, message) => { dialogs.push({ title, message }); return confirm; },
       setHiddenThinkingLabel: (value) => labels.push(value),
+      setStatus: (key, text) => statuses.push({ key, text }),
     },
   };
   registerChineseUI(pi, { dataDir, packageRoot: directory, patcher: () => p });
-  return { p, pi, ctx, commands, events, notifications, dialogs, labels, executions, file, source, configFile,
+  return { p, pi, ctx, commands, events, notifications, dialogs, labels, executions, statuses, file, source, configFile,
     config: () => readJSON(configFile, {}),
     run: (args = '') => commands.get('zh-cn').handler(args, ctx),
     choose: (prefix) => { choose = typeof prefix === 'function' ? prefix : (options) => options.find((option) => option.startsWith(prefix)); },
@@ -77,6 +78,41 @@ test('keyboard selection enables localization, marks current first, and persists
   assert.match(readFileSync(f.file, 'utf8'), /设置/);
   assert.equal(f.idle(), 1);
   assert.match(f.notifications.at(-1).message, /重启/);
+});
+
+test('background progress clears on success and failure without hiding file conflicts', async (t) => {
+  const f = fixture(t);
+  f.choose('开启');
+  await f.run('toggle');
+  assert.ok(f.statuses.some(({ text }) => text?.includes('正在开启')));
+  assert.equal(f.statuses.at(-1).text, undefined);
+  writeFileSync(f.file, 'external change');
+  f.choose('关闭');
+  await f.run('toggle');
+  assert.equal(f.config().enabled, true);
+  assert.equal(f.statuses.at(-1).text, undefined);
+  assert.equal(f.notifications.at(-1).type, 'error');
+});
+
+test('session shutdown waits for an in-flight worker and completed persistence', async (t) => {
+  const f = fixture(t);
+  let release, began;
+  const barrier = new Promise((resolve) => { release = resolve; });
+  const started = new Promise((resolve) => { began = resolve; });
+  const actual = f.p.runAsync.bind(f.p);
+  f.p.runAsync = async (action) => { began(); await barrier; return actual(action); };
+  f.choose('开启');
+  const toggle = f.run('toggle');
+  await started;
+  let stopped = false;
+  const shutdown = f.events.get('session_shutdown')().then(() => { stopped = true; });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(stopped, false);
+  assert.equal(f.config().enabled, false);
+  release();
+  await Promise.all([toggle, shutdown]);
+  assert.equal(f.config().enabled, true);
+  assert.match(readFileSync(f.file, 'utf8'), /设置/);
 });
 
 test('keyboard selection disables localization, restores originals and stops auto-apply', async (t) => {
@@ -189,11 +225,11 @@ test('cancelled update performs no network operation', async (t) => {
   assert.equal(f.executions.length, 0);
 });
 
-test('startup is TUI-only and reply guidance follows both switch settings', (t) => {
+test('startup is TUI-only and reply guidance follows both switch settings', async (t) => {
   const f = fixture(t, { enabled: true, chineseReplies: true });
-  for (const mode of ['rpc', 'json', 'print']) f.events.get('session_start')({}, { ...f.ctx, mode });
+  for (const mode of ['rpc', 'json', 'print']) await f.events.get('session_start')({}, { ...f.ctx, mode });
   assert.equal(readFileSync(f.file, 'utf8'), f.source);
-  f.events.get('session_start')({}, f.ctx);
+  await f.events.get('session_start')({}, f.ctx);
   assert.match(readFileSync(f.file, 'utf8'), /设置/);
   const event = { systemPromptOptions: { promptGuidelines: [] } };
   f.events.get('before_agent_start')(event);

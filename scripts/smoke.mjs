@@ -4,7 +4,8 @@ import { mkdtempSync, mkdirSync, cpSync, symlinkSync, readFileSync, readdirSync,
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { changelogEntries } from '../lib/changelog.js';
 import { Patcher } from '../lib/patcher.js';
 import { hash, readJSON, defaultDataDir } from '../lib/storage.js';
 
@@ -88,6 +89,16 @@ try {
   const applied = p.apply();
   assert.ok(applied.changedFiles >= 0);
   assert.equal(p.apply().changedFiles, 0);
+  const { parseChangelog } = await import(pathToFileURL(join(copy, 'dist/utils/changelog.js')).href);
+  const nativeEntries = parseChangelog(join(copy, 'CHANGELOG.md'));
+  const expectedEntries = changelogEntries(readFileSync(join(copy, 'CHANGELOG.md'), 'utf8'));
+  assert.equal(applied.changelog.translated, applied.changelog.total);
+  assert.equal(nativeEntries.length, expectedEntries.length);
+  for (let i = 0; i < nativeEntries.length; i++) {
+    assert.equal(nativeEntries[i].content, expectedEntries[i].source.trim());
+    // Some upstream versions contain only the immutable version/date heading.
+    if (nativeEntries[i].content.includes('\n')) assert.match(nativeEntries[i].content, /[\u3400-\u9fff]/);
+  }
   const stateBefore = JSON.stringify(p.state());
   const help = run([...flags, '--help']);
   assert.match(help, /用法：/);
@@ -101,6 +112,7 @@ try {
   assert.equal(existsSync(configFile), false);
   const info = await runDialog('/zh-cn');
   assert.ok(info.some((record) => record.method === 'notify' && record.message.includes('/zh-cn toggle')));
+  assert.ok(info.some((record) => record.method === 'setStatus' && record.statusText?.includes('正在读取')));
   assert.equal(JSON.stringify(p.state()), stateBefore);
   const cancelled = await runDialog('/zh-cn toggle', () => ({ cancelled: true }));
   assert.equal(cancelled.find((record) => record.method === 'select').options.length, 2);
@@ -111,7 +123,8 @@ try {
   await runDialog('/zh-cn toggle', (request) => ({ value: request.options.find((option) => option.startsWith('关闭')) }));
   assert.equal(readJSON(configFile, {}).enabled, false);
   assert.equal(Object.keys(p.state().files).length, 0);
-  await runDialog('/zh-cn toggle', (request) => ({ value: request.options.find((option) => option.startsWith('开启')) }));
+  const enabledMessages = await runDialog('/zh-cn toggle', (request) => ({ value: request.options.find((option) => option.startsWith('开启')) }));
+  assert.ok(enabledMessages.some((record) => record.method === 'setStatus' && record.statusText?.includes('正在开启')));
   assert.equal(readJSON(configFile, {}).enabled, true);
   assert.equal(readJSON(configFile, {}).chineseReplies, false);
   await runDialog('/zh-cn update', () => ({ cancelled: true }));
@@ -129,7 +142,7 @@ try {
   }
   compare('dist');
   for (const name of ['package.json', 'CHANGELOG.md']) assert.equal(hash(readFileSync(join(copy, name))), baseline.get(name));
-  console.log(`真实 Pi 验证通过：${applied.changedFiles} 个补丁文件、中文 CLI、统一说明、宿主选择器与取消、开关持久化、${compared + 2} 个文件完整恢复。`);
+  console.log(`真实 Pi 验证通过：${applied.changedFiles} 个补丁文件、中文 CLI、${nativeEntries.length} 版原生中文公告、统一说明、宿主选择器与取消、后台处理状态、开关持久化、${compared + 2} 个文件完整恢复。`);
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }
