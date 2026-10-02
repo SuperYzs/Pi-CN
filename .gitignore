@@ -1,0 +1,6 @@
+node_modules/
+*.tgz
+coverage/
+.pi/
+maintenance/**/ui.pending.json
+maintenance/**/ui.sources.json

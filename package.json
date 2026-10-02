@@ -1,0 +1,26 @@
+{
+  "name": "pi-zh-cn",
+  "version": "0.2.0",
+  "description": "Pi 核心界面及更新公告离线中文化：按 Pi 版本内置译文、可恢复补丁与 GitHub 更新",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["pi-package", "pi", "i18n", "zh-CN", "chinese"],
+  "engines": { "node": ">=22.19.0" },
+  "pi": { "extensions": ["./extensions/index.ts"] },
+  "bin": { "pi-zh-cn": "./bin/pi-zh-cn.js" },
+  "files": ["extensions", "lib", "locales", "bin", "README.md", "CHANGELOG.md", "LICENSE"],
+  "scripts": {
+    "test": "node --test",
+    "smoke": "node scripts/smoke.mjs",
+    "check": "node --check bin/pi-zh-cn.js && node --check extensions/index.ts && node --check lib/patcher.js && node --check lib/storage.js && node --check lib/syntax.js && node --check lib/changelog.js && node --check lib/releases.js && node --check lib/update.js && node --check scripts/update-pi.mjs && node scripts/update-pi.mjs check",
+    "prepare:pi": "node scripts/update-pi.mjs prepare",
+    "build:pi": "node scripts/update-pi.mjs build",
+    "release:push": "node scripts/push.mjs"
+  },
+  "dependencies": { "acorn": "^8.15.0" },
+  "repository": { "type": "git", "url": "git+https://github.com/SuperYzs/Pi-CN.git" },
+  "homepage": "https://github.com/SuperYzs/Pi-CN",
+  "bugs": { "url": "https://github.com/SuperYzs/Pi-CN/issues" },
+  "peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
+  "peerDependenciesMeta": { "@earendil-works/pi-coding-agent": { "optional": true } }
+}
