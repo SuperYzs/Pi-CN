@@ -140,6 +140,14 @@ test('recovery capsule has only local built-in dependencies and is recreated for
   assert.equal(f.p.apply().cacheHit, true);
   assert.ok(existsSync(join(directory, 'storage.mjs')));
 });
+test('a missing reviewed uninstall entry is refused before writing any core file', (t) => {
+  const f = fixture(t);
+  rmSync(f.file);
+  const before = readFileSync(f.ui, 'utf8');
+  assert.throws(() => f.p.apply(), /卸载入口缺失/);
+  assert.equal(readFileSync(f.ui, 'utf8'), before);
+  assert.deepEqual(f.p.state().files, {});
+});
 test('a changed same-version uninstall implementation is refused before any patch', (t) => {
   const f = fixture(t); writeFileSync(f.file, f.source + '\n// unknown host change');
   assert.throws(() => f.p.apply(), /卸载入口内容未适配/);

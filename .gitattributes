@@ -1,0 +1,3 @@
+# Release entry snapshots preserve the upstream separator before the next version.
+maintenance/*/changelog.source.md whitespace=-blank-at-eof
+maintenance/*/changelog.zh.md whitespace=-blank-at-eof

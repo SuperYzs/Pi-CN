@@ -24,6 +24,9 @@ jobs:
       - run: npm pack --dry-run
   native-uninstall:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pi: ['1.0.0', '1.0.1']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,7 +35,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --omit=peer
       - name: Install supported Pi into a temporary directory
-        run: npm install --prefix "$RUNNER_TEMP/pi-host" --ignore-scripts --no-audit --no-fund @earendil-works/pi-coding-agent@1.0.0
+        run: npm install --prefix "$RUNNER_TEMP/pi-host" --ignore-scripts --no-audit --no-fund @earendil-works/pi-coding-agent@${{ matrix.pi }}
       - name: Verify core localization and restoration
         run: npm run smoke -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent"
       - name: Verify native uninstall and conflict handling

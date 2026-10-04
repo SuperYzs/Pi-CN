@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml/badge.svg)](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Pi 1.0.0](https://img.shields.io/badge/Pi-1.0.0-blue.svg)](https://pi.dev)
+[![Pi 1.0.0–1.0.1](https://img.shields.io/badge/Pi-1.0.0--1.0.1-blue.svg)](https://pi.dev)
 
 **English** | [简体中文](README.zh-CN.md)
 
@@ -10,7 +10,7 @@ Simplified Chinese localization for [Pi](https://pi.dev)'s terminal UI, CLI mess
 
 ## Requirements
 
-- **Pi 1.0.0 installed through npm**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
+- **Pi 1.0.0 or 1.0.1 installed through npm**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
 - Standalone Pi binaries are not supported.
 
 Pi-CN modifies selected core files, including a version-checked uninstall hook, and keeps verified originals for recovery. Conflicting external changes are never silently overwritten.
@@ -54,8 +54,8 @@ After upgrading Pi, update Pi-CN if the new Pi version is reported as unsupporte
 
 ## Coverage
 
-- Supports **Pi 1.0.0** and all **282 releases** included in its changelog, from 0.10.0 to 1.0.0. Historical translations do not imply support for running those older Pi versions.
-- UI coverage is still partial. `/zh-cn` reports UI candidates and release-note coverage.
+- Supports **Pi 1.0.0 and 1.0.1**. Pi 1.0.1 includes **283 releases**, all translated, from 0.10.0 to 1.0.1; Pi 1.0.0 retains its 282-release coverage. Historical translations do not imply support for running those older Pi versions.
+- UI coverage is still partial. Pi 1.0.1 has **856/881 maintained candidates**; remaining technical tags, command examples, and paths are kept unchanged. `/zh-cn` reports the actual installation's UI candidates and release-note coverage.
 - Commands, configuration keys, model identifiers, and code remain unchanged. Third-party extensions, remote service errors, and web content are outside the guaranteed scope.
 - Translations are included with the package. Normal use is offline; installation and updates require network access.
 

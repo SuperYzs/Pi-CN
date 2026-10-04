@@ -20,7 +20,9 @@ function fixture(t, initial = { enabled: false, chineseReplies: true }) {
   writeFileSync(file, source);
   const configFile = join(dataDir, 'config.json');
   writeJSON(configFile, initial);
-  const p = new Patcher(root, dataDir);
+  // This tiny UI-only fixture is not an official install with uninstall entries.
+  const catalog = { schema: 1, versions: { '1.0.0': { ui: {}, changelog: {} } } };
+  const p = new Patcher(root, dataDir, { catalog });
   const commands = new Map();
   const events = new Map();
   const notifications = [], dialogs = [], labels = [], executions = [], statuses = [];

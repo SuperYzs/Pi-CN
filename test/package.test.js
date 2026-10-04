@@ -242,11 +242,17 @@ test('extension contains no runtime model translation path', () => {
   assert.match(extension, /updatePackage/);
 });
 
-test('standalone CLI status, apply, restore and invalid options', (t) => {
-  const { root, data } = fixture(t);
+test('standalone CLI status, incomplete-install refusal, restore and invalid options', (t) => {
+  const { root, data, p } = fixture(t);
   const cli = (action, ...extra) => spawnSync(process.execPath, ['bin/pi-zh-cn.js', action, '--root', root, '--data-dir', data, ...extra], { encoding: 'utf8' });
   assert.equal(cli('status').status, 0);
-  assert.equal(cli('apply').status, 0);
+  const refused = cli('apply');
+  assert.equal(refused.status, 1);
+  assert.match(refused.stderr, /卸载入口缺失/);
+  assert.equal(readJSON(join(data, 'config.json'), null), null);
+  // CLI success on an official install is covered by smoke; create a journal
+  // with this fixture's explicit test catalog to exercise emergency restore.
+  p.apply();
   assert.equal(cli('restore').status, 0);
   assert.equal(readJSON(join(data, 'config.json'), {}).enabled, false);
   assert.equal(cli('status', '--bad').status, 1);

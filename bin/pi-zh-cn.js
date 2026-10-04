@@ -7,7 +7,7 @@ import { defaultDataDir, readJSON, writeJSON } from '../lib/storage.js';
 const HELP = `用法：pi-zh-cn <apply|restore|status> [--root <Pi安装目录>] [--data-dir <数据目录>]
 
 apply      开启汉化，应用界面与公告
-restore    关闭汉化并恢复原文件；卸载前请先执行
+restore    关闭汉化并恢复原文件（应急恢复）
 status     查看候选文本覆盖情况、安装目录和备份信息
 
 交互设置与说明：/zh-cn

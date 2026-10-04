@@ -2,7 +2,7 @@
 
 [![检查](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml/badge.svg)](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml)
 [![MIT 协议](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Pi 1.0.0](https://img.shields.io/badge/Pi-1.0.0-blue.svg)](https://pi.dev)
+[![Pi 1.0.0–1.0.1](https://img.shields.io/badge/Pi-1.0.0--1.0.1-blue.svg)](https://pi.dev)
 
 [English](README.md) | **简体中文**
 
@@ -10,7 +10,7 @@
 
 ## 环境要求
 
-- **通过 npm 安装的 Pi 1.0.0**、Node.js 22.19.0 或更新版本，且 Pi 安装目录可写。
+- **通过 npm 安装的 Pi 1.0.0 或 1.0.1**、Node.js 22.19.0 或更新版本，且 Pi 安装目录可写。
 - 暂不支持独立二进制版 Pi。
 
 Pi-CN 会修改选定的核心文件，包括经过版本检查的卸载恢复钩子，并保存已验证的原文备份。文件被其他工具修改时，不会静默覆盖。
@@ -54,8 +54,8 @@ Git 仓库安装也可使用 `/zh-cn update`。更新后运行 `/reload` 或重�
 
 ## 支持范围
 
-- 支持 **Pi 1.0.0**，包含其随包提供的全部 **282 个版本**中文公告（0.10.0 至 1.0.0）。历史公告中文化不代表支持运行这些旧版 Pi。
-- 界面汉化仍在完善，部分文本会保留原文；界面候选与公告覆盖可通过 `/zh-cn` 查看。
+- 支持 **Pi 1.0.0 和 1.0.1**。Pi 1.0.1 随包提供的全部 **283 个版本**公告均已汉化（0.10.0 至 1.0.1）；Pi 1.0.0 保持 282 个版本的公告覆盖。历史公告中文化不代表支持运行这些旧版 Pi。
+- 界面覆盖仍为部分汉化。Pi 1.0.1 已维护 **856/881 个候选**；其余技术标记、命令示例和路径保持原样。`/zh-cn` 会显示实际安装的界面候选及公告覆盖情况。
 - 命令、配置键、模型标识和代码保持原样；第三方扩展、远程服务错误和网页不在保证范围内。
 - 译文随插件提供，正常使用不需要联网；安装和更新需要联网。
 

@@ -2,6 +2,13 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.6.0
+
+- Support npm-installed Pi 1.0.1 while retaining Pi 1.0.0 compatibility and version-checked native uninstall recovery.
+- Maintain 856/881 Pi 1.0.1 UI candidates, including OAuth URL copying, MCP project overrides, CLI help, and settings; preserve technical tags and command examples.
+- Include all 283 release announcements shipped with Pi 1.0.1, keeping earlier translations and protected technical content intact.
+- Refuse localization when a reviewed uninstall entry is missing, and clarify that manual recovery is not required before native uninstall.
+
 ## 0.5.0
 
 - Restore original core files automatically before native `pi uninstall` or `pi remove`; no manual localization switch is required.
