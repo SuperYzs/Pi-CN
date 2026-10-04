@@ -2,6 +2,12 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.6.1
+
+- Support npm-installed Pi 1.0.2, with reviewed bundle/SDK uninstall recovery and unchanged 856/881 UI-candidate coverage.
+- Translate all 284 bundled release announcements, including per-thinking-level sampling overrides; preserve configuration keys, code, links, and earlier translations.
+- Keep Pi 1.0.0 and 1.0.1 compatibility. Pair Pi 1.0.2 with Pi-CN 0.6.1, then increment the plugin patch number for each subsequent Pi 1.0.x patch release.
+
 ## 0.6.0
 
 - Support npm-installed Pi 1.0.1 while retaining Pi 1.0.0 compatibility and version-checked native uninstall recovery.

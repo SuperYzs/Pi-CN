@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml/badge.svg)](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Pi 1.0.0–1.0.1](https://img.shields.io/badge/Pi-1.0.0--1.0.1-blue.svg)](https://pi.dev)
+[![Pi 1.0.0–1.0.2](https://img.shields.io/badge/Pi-1.0.0--1.0.2-blue.svg)](https://pi.dev)
 
 **English** | [简体中文](README.zh-CN.md)
 
@@ -10,7 +10,7 @@ Simplified Chinese localization for [Pi](https://pi.dev)'s terminal UI, CLI mess
 
 ## Requirements
 
-- **Pi 1.0.0 or 1.0.1 installed through npm**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
+- **Pi 1.0.0, 1.0.1, or 1.0.2 installed through npm**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
 - Standalone Pi binaries are not supported.
 
 Pi-CN modifies selected core files, including a version-checked uninstall hook, and keeps verified originals for recovery. Conflicting external changes are never silently overwritten.
@@ -52,10 +52,12 @@ Git checkouts can also use `/zh-cn update`. Then run `/reload` or restart Pi; fu
 
 After upgrading Pi, update Pi-CN if the new Pi version is reported as unsupported. If support is not available yet, wait for a compatible plugin release. Pinned tags and commits do not automatically move to newer releases. Updates refuse dirty checkouts or unexpected branches rather than discarding changes.
 
+Pi-CN **0.6.1** pairs with Pi **1.0.2**. Each subsequent Pi 1.0.x patch increment also increments the Pi-CN 0.6.y patch number (for example, Pi 1.0.3 → Pi-CN 0.6.2). New Pi versions still require an explicitly reviewed compatible release.
+
 ## Coverage
 
-- Supports **Pi 1.0.0 and 1.0.1**. Pi 1.0.1 includes **283 releases**, all translated, from 0.10.0 to 1.0.1; Pi 1.0.0 retains its 282-release coverage. Historical translations do not imply support for running those older Pi versions.
-- UI coverage is still partial. Pi 1.0.1 has **856/881 maintained candidates**; remaining technical tags, command examples, and paths are kept unchanged. `/zh-cn` reports the actual installation's UI candidates and release-note coverage.
+- Supports **Pi 1.0.0, 1.0.1, and 1.0.2**. Pi 1.0.2 includes **284 releases**, all translated, from 0.10.0 to 1.0.2; Pi 1.0.1 and 1.0.0 retain their 283- and 282-release coverage. Historical translations do not imply support for running those older Pi versions.
+- UI coverage is still partial. Pi 1.0.1 and 1.0.2 each have **856/881 maintained candidates**; remaining technical tags, command examples, and paths are kept unchanged. `/zh-cn` reports the actual installation's UI candidates and release-note coverage.
 - Commands, configuration keys, model identifiers, and code remain unchanged. Third-party extensions, remote service errors, and web content are outside the guaranteed scope.
 - Translations are included with the package. Normal use is offline; installation and updates require network access.
 
