@@ -1,6 +1,6 @@
 {
   "name": "pi-zh-cn",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Simplified Chinese UI and release notes for Pi, with reversible core patches and automatic uninstall recovery.",
   "author": "SuperYzs",
   "type": "module",
@@ -14,7 +14,8 @@
     "test": "node --test",
     "smoke": "node scripts/smoke.mjs",
     "smoke:uninstall": "node scripts/uninstall-smoke.mjs",
-    "check": "node --check bin/pi-zh-cn.js && node --check extensions/index.ts && node --check lib/patcher.js && node --check lib/storage.js && node --check lib/syntax.js && node --check lib/changelog.js && node --check lib/releases.js && node --check lib/update.js && node --check lib/ui.js && node --check lib/worker.js && node --check lib/patch-worker.js && node --check lib/recovery.js && node --check lib/uninstall-patch.js && node --check scripts/uninstall-smoke.mjs && node --check scripts/pi-fixture.mjs && node --check scripts/push.mjs && node --check scripts/update-pi.mjs && node scripts/update-pi.mjs check",
+    "smoke:managed": "node scripts/managed-smoke.mjs",
+    "check": "node --check bin/pi-zh-cn.js && node --check extensions/index.ts && node --check lib/patcher.js && node --check lib/storage.js && node --check lib/syntax.js && node --check lib/changelog.js && node --check lib/releases.js && node --check lib/update.js && node --check lib/ui.js && node --check lib/worker.js && node --check lib/patch-worker.js && node --check lib/recovery.js && node --check lib/uninstall-patch.js && node --check scripts/uninstall-smoke.mjs && node --check scripts/pi-fixture.mjs && node --check scripts/managed-smoke.mjs && node --check scripts/push.mjs && node --check scripts/update-pi.mjs && node scripts/update-pi.mjs check",
     "prepare:pi": "node scripts/update-pi.mjs prepare",
     "build:pi": "node scripts/update-pi.mjs build",
     "release:push": "node scripts/push.mjs"

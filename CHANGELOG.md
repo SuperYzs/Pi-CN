@@ -2,6 +2,14 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.7.0
+
+- Support Pi 1.1.0 with 863/888 maintained UI candidates, including restart hints, program status, and updated tool-selection help.
+- Translate all 287 bundled releases, adding Pi 1.0.3, 1.0.4, and 1.1.0 without changing the previous 284 translations.
+- Recognize Pi's managed launcher for emergency CLI operations; validate install metadata and version pointers without executing the launcher or selecting a fallback installation.
+- Review the new bundle uninstall entry while retaining SDK recovery safeguards and Pi 1.0.0–1.0.2 resources.
+- Pair Pi 1.1.0 with Pi-CN 0.7.0; Pi minor upgrades increment the plugin minor and reset its patch, while patch upgrades increment the plugin patch (Pi 1.1.1 → Pi-CN 0.7.1).
+
 ## 0.6.1
 
 - Support npm-installed Pi 1.0.2, with reviewed bundle/SDK uninstall recovery and unchanged 856/881 UI-candidate coverage.

@@ -34,7 +34,10 @@ try {
       else for (const path of (process.env.PATH || '').split(delimiter)) {
         const executable = join(path, process.platform === 'win32' ? 'pi.cmd' : 'pi');
         if (!existsSync(executable)) continue;
-        try { root = discoverPi(executable); break; } catch { /* Try the next PATH entry. */ }
+        // Match the first Pi launcher on PATH; never patch a different install
+        // when the active launcher's managed metadata is broken.
+        root = discoverPi(executable);
+        break;
       }
     }
     if (!root) throw new Error('找不到 npm 版 Pi；请通过 --root 或 PI_ZH_CN_ROOT 指定安装目录');
