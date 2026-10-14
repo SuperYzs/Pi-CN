@@ -1,7 +1,7 @@
 // Offline native uninstall integration. Only temporary Pi/package copies change.
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, cpSync, symlinkSync, readFileSync, readdirSync, existsSync, writeFileSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, resolve, relative } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -36,6 +36,9 @@ try {
     { kind: 'npm', command: 'uninstall' },
     { kind: 'local', command: 'remove', local: true },
     { kind: 'git', command: 'uninstall', conflict: true },
+    ...[false, true].flatMap(local => [false, true].flatMap(entry => ['uninstall', 'remove'].map(command => ({ kind: 'local', command, local, entry, relative: true })))),
+    { kind: 'git', command: 'uninstall', manifest: 'missing' },
+    { kind: 'local', command: 'remove', local: true, relative: true, manifest: 'corrupt' },
   ];
   for (let i = 0; i < cases.length; i++) {
     const scenario = cases[i], cwd = join(temp, `work-${i}`), agent = join(temp, `agent-${i}`);
@@ -49,8 +52,10 @@ try {
     for (const name of ['lib', 'locales', 'extensions', 'package.json']) cpSync(join(project, name), join(pkg, name), { recursive: true });
     symlinkSync(join(project, 'node_modules'), join(pkg, 'node_modules'), 'dir');
     if (scenario.kind === 'npm') writeJSON(join(base, 'npm/package.json'), { name: 'smoke-install-root', private: true, dependencies: { 'pi-zh-cn': 'file:./node_modules/pi-zh-cn' } });
-    // Pi persists canonical local sources. Use that identity in either scope.
-    if (scenario.kind === 'local') source = pkg;
+    const installed = scenario.entry ? join(pkg, 'extensions/index.ts') : pkg;
+    const commandSource = scenario.kind === 'local' ? (scenario.relative ? `./Pi-CN${scenario.entry ? '/extensions/index.ts' : ''}` : installed) : source;
+    // Persist local sources relative to their settings directory, like Pi itself.
+    if (scenario.kind === 'local') source = relative(base, installed);
     const settings = join(base, 'settings.json');
     writeJSON(settings, { packages: [source] });
     const { Patcher: InstalledPatcher } = await import(pathToFileURL(join(pkg, 'lib/patcher.js')));
@@ -60,17 +65,24 @@ try {
     const file = join(root, 'dist/modes/interactive/interactive-mode.js');
     const patched = readFileSync(file, 'utf8');
     if (scenario.conflict) writeFileSync(file, patched + '\n// external edit');
-    const result = spawnSync(process.execPath, [join(root, 'dist/bundle/cli.js'), scenario.command, source, ...(scenario.local ? ['-l', '-a'] : [])], {
+    const stateFile = join(p.dir, 'state.json'), manifest = readFileSync(stateFile, 'utf8');
+    if (scenario.manifest === 'missing') rmSync(stateFile);
+    else if (scenario.manifest === 'corrupt') writeFileSync(stateFile, '{');
+    const beforeFailure = scenario.conflict || scenario.manifest
+      ? new Map([...baseline.keys()].map(name => [name, hash(readFileSync(join(root, name)))])) : undefined;
+    const result = spawnSync(process.execPath, [join(root, 'dist/bundle/cli.js'), scenario.command, commandSource, ...(scenario.local ? ['-l', '-a'] : [])], {
       cwd, encoding: 'utf8', timeout: 30000,
       env: { ...process.env, PI_ZH_CN_ROOT: root, PI_CODING_AGENT_DIR: agent, PI_OFFLINE: '1', PI_TELEMETRY: '0', npm_config_offline: 'true', npm_config_ignore_scripts: 'true', npm_config_audit: 'false', npm_config_fund: 'false' },
     });
     assert.equal(result.error, undefined);
-    if (scenario.conflict) {
+    if (scenario.conflict || scenario.manifest) {
       assert.notEqual(result.status, 0, result.stdout);
-      assert.match(result.stderr + result.stdout, /修改|恢复/);
+      assert.match(result.stderr + result.stdout, /修改|恢复|JSON/);
       assert.ok(existsSync(pkg));
       assert.deepEqual(readJSON(settings, {}).packages, [source]);
-      assert.equal(readFileSync(file, 'utf8'), patched + '\n// external edit');
+      assert.equal(readFileSync(file, 'utf8'), patched + (scenario.conflict ? '\n// external edit' : ''));
+      for (const [name, digest] of beforeFailure) assert.equal(hash(readFileSync(join(root, name))), digest, `Failed removal changed ${name}`);
+      writeFileSync(stateFile, manifest);
       writeFileSync(file, patched); p.restore();
     } else {
       assert.equal(result.status, 0, result.stderr);
@@ -81,6 +93,6 @@ try {
     }
     assert.deepEqual(readJSON(join(p.dataDir, 'config.json'), {}), { enabled: true, chineseReplies: false });
     verifyRestored();
-    console.log(`Native ${scenario.command}: ${scenario.kind}${scenario.local ? ' project scope' : ''}${scenario.conflict ? ' conflict safely aborted' : ' restored and removed'} (${baseline.size} files verified)`);
+    console.log(`Native ${scenario.command}: ${scenario.kind}${scenario.local ? ' project scope' : ''}${scenario.relative ? ' relative input' : ''}${scenario.entry ? ' extension entry' : ''}${scenario.conflict ? ' conflict safely aborted' : scenario.manifest ? ` ${scenario.manifest} manifest safely aborted` : ' restored and removed'} (${baseline.size} files verified)`);
   }
 } finally { rmSync(temp, { recursive: true, force: true }); }

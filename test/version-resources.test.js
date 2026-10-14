@@ -10,16 +10,17 @@ const versions = [
   { version: '1.0.1', previous: '1.0.0', history: 283, added: 1, candidates: 881, translated: 856, bundle: 'chunk-5OEJBNHG.js' },
   { version: '1.0.2', previous: '1.0.1', history: 284, added: 1, candidates: 881, translated: 856, bundle: 'chunk-ZSBPJAJ2.js' },
   { version: '1.1.0', previous: '1.0.2', history: 287, added: 3, candidates: 888, translated: 863, bundle: 'chunk-OIM2DMFI.js' },
+  { version: '1.2.0', previous: '1.1.0', history: 288, added: 1, candidates: 889, translated: 864, bundle: 'chunk-TJXZSVTD.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
 ];
-for (const { version, previous, history, added, candidates, translated, bundle } of versions) {
+for (const { version, previous, history, added, candidates, translated, bundle, sdk = 'cfd718348caadc3b74df206e9af417afb9f409cdd7b508891eb7608c21fade80' } of versions) {
   test(`Pi ${version} is explicitly supported with its own reviewed uninstall entry`, () => {
     assert.doesNotThrow(() => requireVersion(catalog, version));
-    for (const unknown of ['1.0.3', '1.0.4', '1.1.1']) assert.throws(() => requireVersion(catalog, unknown), /未适配/);
+    for (const unknown of ['1.0.3', '1.0.4', '1.1.1', '1.2.1', '1.3.0']) assert.throws(() => requireVersion(catalog, unknown), /未适配/);
     const release = catalog.versions[version];
     assert.equal(release.uiCandidates, candidates);
     assert.equal(release.uiTranslated, translated);
     assert.equal(release.completeUI, false);
-    assert.equal(release.uninstallTargets['dist/core/package-manager.js'], catalog.versions['1.0.0'].uninstallTargets['dist/core/package-manager.js']);
+    assert.equal(release.uninstallTargets['dist/core/package-manager.js'], sdk);
     assert.ok(release.uninstallTargets[`dist/bundle/chunks/${bundle}`]);
     const previousBundle = Object.keys(catalog.versions[previous].uninstallTargets).find(name => name.startsWith('dist/bundle/'));
     assert.equal(release.uninstallTargets[previousBundle], undefined);
@@ -58,6 +59,16 @@ test('Pi 1.1.0 help preserves new tool-selection flags and restart/status templa
   assert.equal(ui['Compacting context'], '正在压缩上下文');
   assert.equal(ui['Restart with `@@PI_EXPR_0@@` to continue this session.'], '请使用 `@@PI_EXPR_0@@` 重启以继续本次会话。');
   for (const version of ['1.0.3', '1.0.4', '1.1.0']) assert.ok(changelogEntries(readFileSync('maintenance/1.1.0/history.zh.md', 'utf8')).some(e => e.version === version));
+});
+test('Pi 1.2.0 UI preserves the revised cursor, resource and whole-login-timeout semantics', () => {
+  const ui = catalog.versions['1.2.0'].ui;
+  assert.equal(ui["Use the terminal cursor instead of Pi's drawn cursor"], '使用终端光标，而非 Pi 绘制的光标');
+  assert.equal(ui['  offers resources'], '  提供资源');
+  assert.equal(ui['cursor can only be used when a server is specified'], '只有指定服务器时才能使用 cursor');
+  const help = Object.keys(ui).find(s => s.includes('Time limit for the whole sign-in (default: 300)'));
+  assert.ok(help);
+  assert.ok(ui[help].includes('--timeout <seconds>     整个登录过程的时间限制（默认：300）'));
+  for (const obsolete of ['Use terminal cursor for IME support', '  @@PI_EXPR_0@@ resources · @@PI_EXPR_1@@ templates']) assert.equal(ui[obsolete], undefined);
 });
 test('plugin minor and patch versions follow the reviewed Pi release pairing', () => {
   const latest = Object.keys(catalog.versions).map(v => v.split('.').map(Number)).sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0];

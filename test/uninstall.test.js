@@ -71,6 +71,46 @@ test('removing the explicitly installed extension file also recovers the parent 
   assert.deepEqual(f.p.state().files, {});
   assert.match(readFileSync(f.ui, 'utf8'), /Settings/);
 });
+for (const entry of ['', '/extensions/index.ts']) {
+  test(`relative local input is resolved from the caller before installed-path lookup${entry}`, async (t) => {
+    const f = fixture(t); f.p.apply();
+    const installed = f.p.recoveryContext().packageRoot + entry;
+    const m = await manager(f, { [installed]: installed });
+    m.parseSource = source => ({ type: 'local', path: source });
+    const input = './Pi-CN' + entry;
+    m.resolvePath = path => { assert.equal(path, input); return installed; };
+    await m.removeAndPersist(input);
+    assert.deepEqual(f.p.state().files, {});
+    assert.deepEqual(m.removed, [input]);
+  });
+}
+for (const missing of ['missing', 'corrupt', 'null', 'array files']) {
+  test(`${missing} recovery manifest aborts native self-uninstall before deletion or persistence`, async (t) => {
+    const f = fixture(t); f.p.apply();
+    const m = await manager(f, { self: f.p.recoveryContext().packageRoot });
+    const stateFile = join(f.p.dir, 'state.json'), state = readFileSync(stateFile, 'utf8');
+    const patched = readFileSync(f.ui, 'utf8');
+    if (missing === 'missing') rmSync(stateFile);
+    else if (missing === 'corrupt') writeFileSync(stateFile, '{');
+    else if (missing === 'null') writeJSON(stateFile, null);
+    else writeJSON(stateFile, { schema: 1, root: f.root, files: [] });
+    let deleted = false; m.actualRemoval = async () => { deleted = true; };
+    await assert.rejects(m.removeAndPersist('self'), /清单|JSON/);
+    assert.equal(deleted, false);
+    assert.deepEqual(m.removed, []);
+    assert.equal(readFileSync(f.ui, 'utf8'), patched);
+    if (missing === 'missing') assert.equal(existsSync(stateFile), false);
+    writeFileSync(stateFile, state); f.p.restore();
+  });
+}
+test('an existing empty manifest remains a valid native recovery no-op', async (t) => {
+  const f = fixture(t); f.p.apply();
+  const m = await manager(f, { self: f.p.recoveryContext().packageRoot });
+  f.p.restore();
+  await m.removeAndPersist('self');
+  assert.deepEqual(m.removed, ['self']);
+  assert.equal(readFileSync(f.ui, 'utf8'), 'class InteractiveMode {render(){return "Settings"}}');
+});
 test('a later package-manager failure keeps backups and preferences available', async (t) => {
   const f = fixture(t); f.p.apply();
   const m = await manager(f, { self: f.p.recoveryContext().packageRoot });

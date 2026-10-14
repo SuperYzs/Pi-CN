@@ -2,6 +2,15 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.8.0
+
+- Support Pi 1.2.0 with 864/889 maintained UI candidates, including terminal cursor settings, MCP resource indicators, and updated login timeout help.
+- Translate all 288 bundled releases while keeping the previous 287 translations unchanged.
+- Review the changed SDK and bundle uninstall entries; preserve trust ordering, conflict checks, managed-launcher recovery, and all previously supported versions.
+- Restore before relative-path native uninstall in both scopes, including extension-file sources; abort self-uninstall when the recovery manifest is missing or invalid.
+- Verify Chinese-reply guidance for both user-initiated and extension-initiated runs under Pi 1.2.0's `before_agent_start` event union.
+- Pair Pi 1.2.0 with Pi-CN 0.8.0, following the established minor/patch version rule (Pi 1.2.1 → Pi-CN 0.8.1).
+
 ## 0.7.0
 
 - Support Pi 1.1.0 with 863/888 maintained UI candidates, including restart hints, program status, and updated tool-selection help.

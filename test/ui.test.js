@@ -243,6 +243,31 @@ test('startup is TUI-only and reply guidance follows both switch settings', asyn
   assert.equal(next.systemPromptOptions.promptGuidelines.length, 0);
 });
 
+test('Pi 1.2.0 user and custom starts preserve prompt data and gate language guidance on both switches', (t) => {
+  const f = fixture(t);
+  const handler = f.events.get('before_agent_start');
+  for (const enabled of [false, true]) for (const chineseReplies of [false, true]) {
+    writeJSON(f.configFile, { enabled, chineseReplies });
+    const shared = { type: 'before_agent_start', systemPrompt: 'Existing system prompt' };
+    const starts = [
+      { ...shared, messageType: 'user', prompt: 'Please answer in English', images: [{ type: 'image', data: 'aGVsbG8=', mimeType: 'image/png' }] },
+      { ...shared, messageType: 'custom', message: { role: 'custom', customType: 'test', content: [{ type: 'text', text: 'Extension-initiated turn' }], display: false, timestamp: 0 } },
+    ];
+    for (const input of starts) {
+      const snapshot = structuredClone(input);
+      const event = { ...input, systemPromptOptions: { promptGuidelines: ['Existing guidance'] } };
+      assert.equal(handler(event), undefined);
+      assert.equal(handler(event), undefined);
+      const { systemPromptOptions, ...unchanged } = event;
+      assert.deepEqual(unchanged, snapshot);
+      assert.equal(systemPromptOptions.promptGuidelines[0], 'Existing guidance');
+      assert.equal(systemPromptOptions.promptGuidelines.length, enabled && chineseReplies ? 2 : 1);
+      if (enabled && chineseReplies) assert.equal(systemPromptOptions.promptGuidelines[1], '默认使用简体中文向用户解释和回复；如果用户指定其他语言则遵从用户。保留代码、命令、路径、配置键和协议字段原样。');
+    }
+  }
+  assert.equal(readFileSync(f.file, 'utf8'), f.source);
+});
+
 test('public docs and UI omit agent instructions and obsolete translation explanations', () => {
   for (const path of ['README.md', 'README.zh-CN.md', 'CHANGELOG.md', 'CHANGELOG.zh-CN.md', 'CONTRIBUTING.md', 'lib/ui.js', 'lib/releases.js', 'bin/pi-zh-cn.js']) {
     assert.doesNotMatch(readFileSync(path, 'utf8'), /AGENTS\.md|\/home\/superyzs|release:push|prepare:pi|build:pi|实时.*翻译|运行时.*翻译|模型翻译|不调用模型|没有模型调用/);
