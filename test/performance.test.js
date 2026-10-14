@@ -33,6 +33,26 @@ test('repeat apply and off/on reuse a verified plan without any AST scan', (t) =
   assert.match(readFileSync(file, 'utf8'), /设置/);
 });
 
+test('standalone built-in MCP CLI chunks use reviewed SDK display text and restore exactly', (t) => {
+  const { p, root } = fixture(t);
+  mkdirSync(join(root, 'dist/extensions/mcp'), { recursive: true });
+  mkdirSync(join(root, 'dist/bundle/chunks'), { recursive: true });
+  const sdk = join(root, 'dist/extensions/mcp/cli.js');
+  const bundle = join(root, 'dist/bundle/chunks/cli-MCP.js');
+  const unrelated = join(root, 'dist/bundle/chunks/unrelated.js');
+  const source = 'const HELP="Time limit for the whole sign-in";function runMcpCommand(){return HELP;}';
+  const untouched = 'const HELP="Time limit for the whole sign-in";';
+  writeFileSync(sdk, source); writeFileSync(bundle, source); writeFileSync(unrelated, untouched);
+  p.catalog.versions['1.0.0'].ui['Time limit for the whole sign-in'] = '整个登录过程的时间限制';
+  assert.equal(p.apply().cacheHit, false);
+  for (const file of [sdk, bundle]) assert.match(readFileSync(file, 'utf8'), /整个登录过程的时间限制/);
+  assert.equal(readFileSync(unrelated, 'utf8'), untouched);
+  assert.equal(p.apply().cacheHit, true);
+  p.restore();
+  for (const file of [sdk, bundle]) assert.equal(readFileSync(file, 'utf8'), source);
+  assert.equal(readFileSync(unrelated, 'utf8'), untouched);
+});
+
 test('changed resources, source files and newly discovered files invalidate plans', (t) => {
   const { p, root, file, source } = fixture(t);
   p.apply();
