@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml/badge.svg)](https://github.com/SuperYzs/Pi-CN/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Pi 1.2.0](https://img.shields.io/badge/Pi-1.2.0-blue.svg)](https://pi.dev)
+[![Pi 1.3.0](https://img.shields.io/badge/Pi-1.3.0-blue.svg)](https://pi.dev)
 
 **English** | [简体中文](README.zh-CN.md)
 
@@ -10,7 +10,7 @@ Simplified Chinese localization for [Pi](https://pi.dev)'s terminal UI, CLI mess
 
 ## Requirements
 
-- **Pi 1.2.0, 1.1.0, 1.0.2, 1.0.1, or 1.0.0 installed through npm or Pi's managed installer**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
+- **Pi 1.3.0, 1.2.0, 1.1.0, 1.0.2, 1.0.1, or 1.0.0 installed through npm or Pi's managed installer**, Node.js 22.19.0 or newer, and a writable Pi installation directory.
 - Standalone Pi binaries are not supported.
 
 Pi-CN modifies selected core files, including a version-checked uninstall hook, and keeps verified originals for recovery. Conflicting external changes are never silently overwritten.
@@ -52,12 +52,12 @@ Git checkouts can also use `/zh-cn update`. Then run `/reload` or restart Pi; fu
 
 After upgrading Pi, update Pi-CN if the new Pi version is reported as unsupported. If support is not available yet, wait for a compatible plugin release. Pinned tags and commits do not automatically move to newer releases. Updates refuse dirty checkouts or unexpected branches rather than discarding changes.
 
-Pi-CN **0.8.0** pairs with Pi **1.2.0**, following Pi 1.1.0 → Pi-CN 0.7.0 and Pi 1.0.2 → Pi-CN 0.6.1. Pi minor upgrades increment the plugin minor version and reset its patch number; Pi patch upgrades increment the plugin patch number (for example, Pi 1.2.1 → Pi-CN 0.8.1 or Pi 1.1.1 → Pi-CN 0.7.1). New Pi versions still require an explicitly reviewed compatible release.
+Pi-CN **0.9.0** pairs with Pi **1.3.0**, following Pi 1.2.0 → Pi-CN 0.8.0, Pi 1.1.0 → Pi-CN 0.7.0, and Pi 1.0.2 → Pi-CN 0.6.1. Pi minor upgrades increment the plugin minor version and reset its patch number; Pi patch upgrades increment the plugin patch number (for example, Pi 1.3.1 → Pi-CN 0.9.1, Pi 1.2.1 → Pi-CN 0.8.1, or Pi 1.1.1 → Pi-CN 0.7.1). New Pi versions still require an explicitly reviewed compatible release.
 
 ## Coverage
 
-- Supports **Pi 1.2.0, 1.1.0, 1.0.2, 1.0.1, and 1.0.0**. Pi 1.2.0 includes **288 releases**, all translated, from 0.10.0 to 1.2.0, including 1.0.3 and 1.0.4. Pi 1.1.0, 1.0.2, 1.0.1, and 1.0.0 retain their 287-, 284-, 283-, and 282-release coverage. Historical translations do not imply support for running those older Pi versions; Pi 1.0.3 and 1.0.4 installations are not supported.
-- UI coverage is still partial. Pi 1.2.0 has **864/889 maintained candidates**; Pi 1.1.0 retains **863/888**; Pi 1.0.1 and 1.0.2 each retain **856/881**. Remaining technical tags, command examples, and paths are kept unchanged. `/zh-cn` reports the actual installation's UI candidates and release-note coverage.
+- Supports **Pi 1.3.0, 1.2.0, 1.1.0, 1.0.2, 1.0.1, and 1.0.0**. Pi 1.3.0 includes **289 releases**, all translated, from 0.10.0 to 1.3.0, including 1.0.3 and 1.0.4. Pi 1.2.0, 1.1.0, 1.0.2, 1.0.1, and 1.0.0 retain their 288-, 287-, 284-, 283-, and 282-release coverage. Historical translations do not imply support for running those older Pi versions; Pi 1.0.3 and 1.0.4 installations are not supported.
+- UI coverage is still partial. Pi 1.3.0 has **867/892 maintained candidates**; Pi 1.2.0 retains **864/889**; Pi 1.1.0 retains **863/888**; Pi 1.0.1 and 1.0.2 each retain **856/881**. Remaining technical tags, command examples, and paths are kept unchanged. `/zh-cn` reports the actual installation's UI candidates and release-note coverage.
 - Commands, configuration keys, model identifiers, and code remain unchanged. Third-party extensions, remote service errors, and web content are outside the guaranteed scope.
 - Translations are included with the package. Normal use is offline; installation and updates require network access.
 

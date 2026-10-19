@@ -1,6 +1,6 @@
 {
   "name": "pi-zh-cn",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Simplified Chinese UI and release notes for Pi, with reversible core patches and automatic uninstall recovery.",
   "author": "SuperYzs",
   "type": "module",

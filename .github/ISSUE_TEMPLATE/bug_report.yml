@@ -9,7 +9,7 @@ body:
     id: versions
     attributes:
       label: Pi and Pi-CN versions / 版本
-      placeholder: "Pi 1.2.0, Pi-CN 0.8.0"
+      placeholder: "Pi 1.3.0, Pi-CN 0.9.0"
     validations:
       required: true
   - type: input

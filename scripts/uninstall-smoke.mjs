@@ -11,6 +11,8 @@ import { linkPiDependencies } from './pi-fixture.mjs';
 
 const original = resolve(process.argv[2] || process.env.PI_ZH_CN_ROOT || '');
 if (!process.argv[2] && !process.env.PI_ZH_CN_ROOT) throw new Error('Specify the installed npm Pi directory');
+const entry = process.argv[3] || 'bundle';
+if (!['bundle', 'sdk'].includes(entry)) throw new Error('Specify bundle or sdk as the optional CLI entry');
 const project = fileURLToPath(new URL('..', import.meta.url));
 const temp = mkdtempSync(join(tmpdir(), 'pi-cn-native-uninstall-')), root = join(temp, 'pi');
 try {
@@ -39,6 +41,10 @@ try {
     ...[false, true].flatMap(local => [false, true].flatMap(entry => ['uninstall', 'remove'].map(command => ({ kind: 'local', command, local, entry, relative: true })))),
     { kind: 'git', command: 'uninstall', manifest: 'missing' },
     { kind: 'local', command: 'remove', local: true, relative: true, manifest: 'corrupt' },
+    { kind: 'git', command: 'uninstall', conflict: true, recordVersion: 'missing' },
+    { kind: 'local', command: 'remove', local: true, relative: true, conflict: true, recordVersion: 'null' },
+    { kind: 'npm', command: 'uninstall', conflict: true, recordVersion: 'invalid' },
+    { kind: 'local', command: 'remove', local: true, relative: true, untrusted: true },
   ];
   for (let i = 0; i < cases.length; i++) {
     const scenario = cases[i], cwd = join(temp, `work-${i}`), agent = join(temp, `agent-${i}`);
@@ -68,16 +74,23 @@ try {
     const stateFile = join(p.dir, 'state.json'), manifest = readFileSync(stateFile, 'utf8');
     if (scenario.manifest === 'missing') rmSync(stateFile);
     else if (scenario.manifest === 'corrupt') writeFileSync(stateFile, '{');
-    const beforeFailure = scenario.conflict || scenario.manifest
+    if (scenario.recordVersion) {
+      const state = JSON.parse(manifest), record = state.files['dist/modes/interactive/interactive-mode.js'];
+      if (scenario.recordVersion === 'missing') delete record.version;
+      else record.version = scenario.recordVersion === 'null' ? null : 'invalid';
+      writeJSON(stateFile, state);
+    }
+    const failing = scenario.conflict || scenario.manifest || scenario.untrusted;
+    const beforeFailure = failing
       ? new Map([...baseline.keys()].map(name => [name, hash(readFileSync(join(root, name)))])) : undefined;
-    const result = spawnSync(process.execPath, [join(root, 'dist/bundle/cli.js'), scenario.command, commandSource, ...(scenario.local ? ['-l', '-a'] : [])], {
+    const result = spawnSync(process.execPath, [join(root, entry === 'sdk' ? 'dist/cli.js' : 'dist/bundle/cli.js'), scenario.command, commandSource, ...(scenario.local ? ['-l', scenario.untrusted ? '--no-approve' : '-a'] : [])], {
       cwd, encoding: 'utf8', timeout: 30000,
       env: { ...process.env, PI_ZH_CN_ROOT: root, PI_CODING_AGENT_DIR: agent, PI_OFFLINE: '1', PI_TELEMETRY: '0', npm_config_offline: 'true', npm_config_ignore_scripts: 'true', npm_config_audit: 'false', npm_config_fund: 'false' },
     });
     assert.equal(result.error, undefined);
-    if (scenario.conflict || scenario.manifest) {
+    if (failing) {
       assert.notEqual(result.status, 0, result.stdout);
-      assert.match(result.stderr + result.stdout, /修改|恢复|JSON/);
+      assert.match(result.stderr + result.stdout, /修改|恢复|JSON|trust|approv/i);
       assert.ok(existsSync(pkg));
       assert.deepEqual(readJSON(settings, {}).packages, [source]);
       assert.equal(readFileSync(file, 'utf8'), patched + (scenario.conflict ? '\n// external edit' : ''));
@@ -93,6 +106,6 @@ try {
     }
     assert.deepEqual(readJSON(join(p.dataDir, 'config.json'), {}), { enabled: true, chineseReplies: false });
     verifyRestored();
-    console.log(`Native ${scenario.command}: ${scenario.kind}${scenario.local ? ' project scope' : ''}${scenario.relative ? ' relative input' : ''}${scenario.entry ? ' extension entry' : ''}${scenario.conflict ? ' conflict safely aborted' : scenario.manifest ? ` ${scenario.manifest} manifest safely aborted` : ' restored and removed'} (${baseline.size} files verified)`);
+    console.log(`Native ${scenario.command}: ${scenario.kind}${scenario.local ? ' project scope' : ''}${scenario.relative ? ' relative input' : ''}${scenario.entry ? ' extension entry' : ''}${scenario.recordVersion ? ` ${scenario.recordVersion} record version` : ''}${scenario.untrusted ? ' untrusted project safely aborted' : scenario.conflict ? ' conflict safely aborted' : scenario.manifest ? ` ${scenario.manifest} manifest safely aborted` : ' restored and removed'} (${baseline.size} files verified)`);
   }
 } finally { rmSync(temp, { recursive: true, force: true }); }

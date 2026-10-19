@@ -8,6 +8,7 @@ import { Patcher } from '../lib/patcher.js';
 import { hash, writeJSON } from '../lib/storage.js';
 import { insertUninstallHook } from '../lib/uninstall-patch.js';
 import { loadCatalog } from '../lib/releases.js';
+import { readState } from '../lib/recovery.js';
 
 const managerSource = `export class DefaultPackageManager {
   parseSource(source) { return source; }
@@ -103,6 +104,43 @@ for (const missing of ['missing', 'corrupt', 'null', 'array files']) {
     writeFileSync(stateFile, state); f.p.restore();
   });
 }
+for (const version of [undefined, null, '', 'invalid', 1, {}, '1.0', '1.0.0-', '01.0.0', '1.0.0-01', '1.0.0\n', '1.0.0\r', ' 1.0.0']) {
+  test(`invalid recovery record version ${JSON.stringify(version)} cannot hide a file conflict during native uninstall`, async (t) => {
+    const f = fixture(t); f.p.apply();
+    const m = await manager(f, { self: f.p.recoveryContext().packageRoot });
+    const stateFile = join(f.p.dir, 'state.json'), state = f.p.state();
+    state.files['dist/modes/interactive/view.js'].version = version;
+    writeJSON(stateFile, state);
+    writeFileSync(f.ui, readFileSync(f.ui, 'utf8') + '\n// external edit');
+    const before = new Map([f.file, f.ui, stateFile].map(file => [file, readFileSync(file, 'utf8')]));
+    let deleted = false; m.actualRemoval = async () => { deleted = true; };
+    await assert.rejects(m.removeAndPersist('self'), /备份版本无效/);
+    assert.equal(deleted, false); assert.deepEqual(m.removed, []);
+    for (const [file, content] of before) assert.equal(readFileSync(file, 'utf8'), content);
+  });
+}
+for (const version of [undefined, null, 1, 'invalid']) {
+  test(`invalid current Pi version ${JSON.stringify(version)} cannot bypass native recovery conflicts`, async (t) => {
+    const f = fixture(t); f.p.apply();
+    const m = await manager(f, { self: f.p.recoveryContext().packageRoot });
+    writeJSON(join(f.root, 'package.json'), { name: '@earendil-works/pi-coding-agent', version, type: 'module' });
+    writeFileSync(f.ui, readFileSync(f.ui, 'utf8') + '\n// external edit');
+    const before = new Map([f.file, f.ui, join(f.p.dir, 'state.json')].map(file => [file, readFileSync(file, 'utf8')]));
+    let deleted = false; m.actualRemoval = async () => { deleted = true; };
+    await assert.rejects(m.removeAndPersist('self'), /Pi 版本无效/);
+    assert.equal(deleted, false); assert.deepEqual(m.removed, []);
+    for (const [file, content] of before) assert.equal(readFileSync(file, 'utf8'), content);
+  });
+}
+test('valid prerelease and build version records remain readable without external dependencies', (t) => {
+  const f = fixture(t); f.p.apply();
+  const state = f.p.state(), stateFile = join(f.p.dir, 'state.json');
+  for (const version of ['1.0.0', '1.0.0-rc.1', '1.0.0-beta-1+build.001']) {
+    for (const record of Object.values(state.files)) record.version = version;
+    writeJSON(stateFile, state);
+    assert.doesNotThrow(() => readState(f.root, f.p.dir, { required: true }));
+  }
+});
 test('an existing empty manifest remains a valid native recovery no-op', async (t) => {
   const f = fixture(t); f.p.apply();
   const m = await manager(f, { self: f.p.recoveryContext().packageRoot });

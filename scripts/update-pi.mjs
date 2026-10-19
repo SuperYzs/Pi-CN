@@ -59,6 +59,14 @@ export function prepare(root, maintenanceDir = join(project, 'maintenance')) {
   atomicWrite(join(directory, 'history.source.md'), fullSource);
   return { version, directory, candidates: inventory.size, pending: [...inventory.keys()].filter((text) => !dictionary[text]).length };
 }
+function requireUninstallTargets(targets) {
+  const names = targets && typeof targets === 'object' && !Array.isArray(targets) ? Object.keys(targets) : [];
+  if (names.length !== 2 || !names.includes('dist/core/package-manager.js')
+      || !names.some(name => /^dist\/bundle\/chunks\/[^/]+\.js$/.test(name))) {
+    throw new Error('卸载入口清单必须包含已审阅的 SDK 和 bundle 目标');
+  }
+  return targets;
+}
 export function build(root, { allowPartialUI = false, maintenanceDir = join(project, 'maintenance'), catalogFile = CATALOG_FILE } = {}) {
   const p = new Patcher(root);
   const version = p.version();
@@ -89,7 +97,7 @@ export function build(root, { allowPartialUI = false, maintenanceDir = join(proj
     if (changelogEntries(fullSource).length > 1) throw new Error('请补齐 history.zh.md 中的全部历史公告后再发布');
     announcements = compileChangelog(source, chinese);
   }
-  const uninstallTargets = readJSON(join(directory, 'uninstall.targets.json'), {});
+  const uninstallTargets = requireUninstallTargets(readJSON(join(directory, 'uninstall.targets.json'), {}));
   for (const [name, digest] of Object.entries(uninstallTargets)) {
     const original = p.original(name);
     if (!(Array.isArray(digest) ? digest : [digest]).includes(hash(original))) throw new Error(`上游卸载入口已变化，请重新审阅：${name}`);
@@ -105,6 +113,7 @@ export function build(root, { allowPartialUI = false, maintenanceDir = join(proj
 export function check(catalogFile = CATALOG_FILE, maintenanceDir = join(project, 'maintenance')) {
   const catalog = loadCatalog(catalogFile);
   for (const [version, release] of Object.entries(catalog.versions)) {
+    requireUninstallTargets(release.uninstallTargets);
     validateUI(release.ui);
     const directory = join(maintenanceDir, version);
     if (JSON.stringify(release.uninstallTargets ?? {}) !== JSON.stringify(readJSON(join(directory, 'uninstall.targets.json'), {}))) throw new Error(`卸载入口摘要与已审阅资源不一致：${version}`);

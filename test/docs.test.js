@@ -15,7 +15,7 @@ test('English is the default and Chinese guides have reciprocal links and equiva
   assert.deepEqual(commands(english), commands(chinese));
   for (const doc of [english, chinese]) {
     for (const command of ['/zh-cn', '/zh-cn toggle', '/zh-cn replies', '/zh-cn update', '/changelog']) assert.ok(doc.includes(command));
-    for (const value of ['282', '283', '284', '287', '288', '1.0.0', '1.0.1', '1.0.2', '1.1.0', '1.2.0', '0.6.1', '0.7.0', '0.7.1', '0.8.0', '0.8.1', '856/881', '863/888', '864/889']) assert.ok(doc.includes(value));
+    for (const value of ['282', '283', '284', '287', '288', '289', '1.0.0', '1.0.1', '1.0.2', '1.1.0', '1.2.0', '1.3.0', '0.6.1', '0.7.0', '0.7.1', '0.8.0', '0.8.1', '0.9.0', '0.9.1', '856/881', '863/888', '864/889', '867/892']) assert.ok(doc.includes(value));
     assert.ok(doc.includes('pi uninstall git:github.com/SuperYzs/Pi-CN'));
     assert.ok(doc.includes('pi remove'));
   }

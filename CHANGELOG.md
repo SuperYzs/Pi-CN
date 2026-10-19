@@ -2,6 +2,15 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.9.0
+
+- Support Pi 1.3.0 with 867/892 maintained UI candidates, including session sharing destinations and Radius authentication messages; preserve read-tool range labels and their expressions.
+- Translate all 289 bundled releases while leaving the previous 288 translations unchanged.
+- Review the new bundle uninstall entry and unchanged SDK source; retain native uninstall recovery, trust ordering, standalone MCP help localization, and managed-launcher safeguards.
+- Reject missing or invalid recovery-record/Pi versions before classifying conflicting files as old; require reviewed SDK and bundle uninstall targets during resource builds and checks.
+- Test both native bundle and SDK uninstall entries, including invalid record versions and untrusted-project refusal.
+- Keep all previously supported versions and pair Pi 1.3.0 with Pi-CN 0.9.0 (Pi 1.3.1 → Pi-CN 0.9.1).
+
 ## 0.8.0
 
 - Support Pi 1.2.0 with 864/889 maintained UI candidates, including terminal cursor settings, MCP resource indicators, and updated login timeout help.

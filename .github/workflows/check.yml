@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        pi: ['1.0.0', '1.0.1', '1.0.2', '1.1.0', '1.2.0']
+        pi: ['1.0.0', '1.0.1', '1.0.2', '1.1.0', '1.2.0', '1.3.0']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,6 +40,9 @@ jobs:
         run: npm run smoke -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent"
       - name: Verify native uninstall and conflict handling
         run: npm run smoke:uninstall -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent"
+      - name: Verify SDK uninstall, damaged records and trust refusal
+        if: matrix.pi == '1.3.0'
+        run: npm run smoke:uninstall -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent" sdk
       - name: Verify managed launcher and emergency recovery
-        if: matrix.pi == '1.1.0' || matrix.pi == '1.2.0'
+        if: matrix.pi == '1.1.0' || matrix.pi == '1.2.0' || matrix.pi == '1.3.0'
         run: npm run smoke:managed -- "$RUNNER_TEMP/pi-host/node_modules/@earendil-works/pi-coding-agent"

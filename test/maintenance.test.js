@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { prepare, build, check, validateUI } from '../scripts/update-pi.mjs';
-import { writeJSON, readJSON } from '../lib/storage.js';
+import { writeJSON, readJSON, hash } from '../lib/storage.js';
 import { Patcher } from '../lib/patcher.js';
 import { isProjectRemote, updatePackage } from '../lib/update.js';
 
@@ -18,6 +18,15 @@ function fixture(t) {
   writeFileSync(join(root, 'dist/modes/interactive/interactive-mode.js'), 'class InteractiveMode { render(){return ["Settings", "Unknown display text"]} }');
   writeFileSync(join(root, 'CHANGELOG.md'), '# Changelog\n\n## [2.0.0] - 2026-10-02\n\n- Added `newAPI()` and /login.\n');
   writeJSON(catalogFile, { schema: 1, versions: {} });
+  const manager = 'class PackageManager { parseSource(source) { return source; } getInstalledPath(source, scope) {} async remove(source, options) { const scope = options?.local ? "project" : "user"; this.assertProjectTrustedForScope(scope); await this.actualRemoval(source, scope); } async removeAndPersist(source, options) { await this.remove(source, options); } } function runPackageCommand() {}';
+  const targets = {};
+  for (const name of ['dist/core/package-manager.js', 'dist/bundle/chunks/test.js']) {
+    mkdirSync(join(root, name, '..'), { recursive: true });
+    writeFileSync(join(root, name), manager);
+    targets[name] = hash(manager);
+  }
+  mkdirSync(join(maintenance, '2.0.0'), { recursive: true });
+  writeJSON(join(maintenance, '2.0.0/uninstall.targets.json'), targets);
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   return { root, maintenance, catalogFile, directory };
 }
@@ -45,6 +54,26 @@ test('build embeds reviewed UI and announcement for immediate offline use', (t) 
   assert.match(readFileSync(join(root, 'dist/modes/interactive/interactive-mode.js'), 'utf8'), /未知显示文本/);
 });
 
+test('build and check refuse missing, empty or incomplete reviewed uninstall targets', (t) => {
+  const { root, maintenance, catalogFile } = fixture(t);
+  const { directory } = prepare(root, maintenance);
+  writeJSON(join(directory, 'ui.zh.json'), { 'Unknown display text': '未知显示文本' });
+  writeFileSync(join(directory, 'changelog.zh.md'), '## [2.0.0] - 2026-10-02\n\n- 新增 `newAPI()` 和 /login。\n');
+  build(root, { maintenanceDir: maintenance, catalogFile });
+  const goodCatalog = readFileSync(catalogFile, 'utf8');
+  const targetsFile = join(directory, 'uninstall.targets.json');
+  const targets = readJSON(targetsFile);
+  for (const invalid of [undefined, {}, [], { 'dist/core/package-manager.js': targets['dist/core/package-manager.js'] }, { 'dist/bundle/chunks/test.js': targets['dist/bundle/chunks/test.js'] }]) {
+    if (invalid === undefined) rmSync(targetsFile); else writeJSON(targetsFile, invalid);
+    assert.throws(() => build(root, { maintenanceDir: maintenance, catalogFile }), /卸载入口清单/);
+    assert.equal(readFileSync(catalogFile, 'utf8'), goodCatalog);
+    const broken = JSON.parse(goodCatalog);
+    broken.versions['2.0.0'].uninstallTargets = invalid;
+    writeJSON(catalogFile, broken);
+    assert.throws(() => check(catalogFile, maintenance), /卸载入口/);
+    writeFileSync(catalogFile, goodCatalog);
+  }
+});
 test('maintenance refuses unfinished UI unless explicitly marked partial', (t) => {
   const { root, maintenance, catalogFile } = fixture(t);
   prepare(root, maintenance);
