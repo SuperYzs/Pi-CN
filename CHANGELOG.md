@@ -2,6 +2,15 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.10.0
+
+- Support Pi 1.4.0 with the same 867/892 reviewed UI candidates as Pi 1.3.0; keep technical text and command examples unchanged.
+- Translate all 290 bundled releases, including classifier image input, compaction, codemode workers, and terminal fixes; preserve the previous 289 translations.
+- Review the new bundle uninstall entry and unchanged SDK source; retain native uninstall recovery, trust ordering, standalone MCP help, and all previously supported versions.
+- Accept one leading UTF-8 BOM in Pi's managed-install marker, matching Pi 1.4.0, without relaxing private recovery-data parsing or metadata validation.
+- Extend official-host checks for invalid selector responses, MCP help, and BOM-marked managed installations; test both bundle and SDK uninstall paths.
+- Pair Pi 1.4.0 with Pi-CN 0.10.0 (Pi 1.4.1 → Pi-CN 0.10.1).
+
 ## 0.9.0
 
 - Support Pi 1.3.0 with 867/892 maintained UI candidates, including session sharing destinations and Radius authentication messages; preserve read-tool range labels and their expressions.

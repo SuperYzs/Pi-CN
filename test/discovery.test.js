@@ -43,6 +43,31 @@ test('managed launcher discovery reads metadata without executing it, including 
   assert.equal(existsSync(join(f.dir, 'executed')), false);
 });
 
+test('managed marker accepts one leading UTF-8 BOM without executing the launcher or relaxing private JSON', t => {
+  const f = fixture(t), marker = join(f.install, 'managed-install.json');
+  writeFileSync(marker, '\uFEFF' + readFileSync(marker, 'utf8'));
+  assert.equal(discoverPi(f.launcher), f.root);
+  const status = f.cli('status');
+  assert.equal(status.status, 0, status.stderr);
+  assert.equal(JSON.parse(status.stdout).root, f.root);
+  assert.equal(existsSync(join(f.dir, 'executed')), false);
+  const privateFile = join(f.dir, 'private.json');
+  writeFileSync(privateFile, '\uFEFF{}');
+  assert.throws(() => readJSON(privateFile), SyntaxError);
+});
+
+test('managed marker BOM support still refuses malformed JSON and invalid schema', t => {
+  const f = fixture(t), marker = join(f.install, 'managed-install.json');
+  const valid = readFileSync(marker, 'utf8');
+  for (const invalid of ['\uFEFF\uFEFF' + valid, ' \uFEFF' + valid, '\uFEFF{broken']) {
+    writeFileSync(marker, invalid);
+    assert.throws(() => discoverPi(f.launcher), SyntaxError);
+  }
+  writeFileSync(marker, '\uFEFF' + JSON.stringify({ kind: 'pi-managed-install', schemaVersion: 2, layout: 'releases-v1' }));
+  assert.throws(() => discoverPi(f.launcher), /安装标记/);
+  assert.equal(existsSync(join(f.dir, 'executed')), false);
+});
+
 test('managed CLI selects only the pointed release and leaves older release files alone', t => {
   const f = fixture(t), older = f.addRelease('1.0.2');
   const oldFile = join(older, 'dist/modes/interactive/interactive-mode.js'), baseline = readFileSync(oldFile);

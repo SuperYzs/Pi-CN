@@ -12,11 +12,12 @@ const versions = [
   { version: '1.1.0', previous: '1.0.2', history: 287, added: 3, candidates: 888, translated: 863, bundle: 'chunk-OIM2DMFI.js' },
   { version: '1.2.0', previous: '1.1.0', history: 288, added: 1, candidates: 889, translated: 864, bundle: 'chunk-TJXZSVTD.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
   { version: '1.3.0', previous: '1.2.0', history: 289, added: 1, candidates: 892, translated: 867, bundle: 'chunk-66G7ITPS.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
+  { version: '1.4.0', previous: '1.3.0', history: 290, added: 1, candidates: 892, translated: 867, bundle: 'chunk-MM3LKT73.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
 ];
 for (const { version, previous, history, added, candidates, translated, bundle, sdk = 'cfd718348caadc3b74df206e9af417afb9f409cdd7b508891eb7608c21fade80' } of versions) {
   test(`Pi ${version} is explicitly supported with its own reviewed uninstall entry`, () => {
     assert.doesNotThrow(() => requireVersion(catalog, version));
-    for (const unknown of ['1.0.3', '1.0.4', '1.1.1', '1.2.1', '1.3.1', '1.4.0']) assert.throws(() => requireVersion(catalog, unknown), /未适配/);
+    for (const unknown of ['1.0.3', '1.0.4', '1.1.1', '1.2.1', '1.3.1', '1.4.1', '1.5.0']) assert.throws(() => requireVersion(catalog, unknown), /未适配/);
     const release = catalog.versions[version];
     assert.equal(release.uiCandidates, candidates);
     assert.equal(release.uiTranslated, translated);
@@ -80,6 +81,11 @@ test('Pi 1.3.0 sharing resources preserve targets, commands and read-range expre
   for (const source of ['[read: @@PI_EXPR_0@@@@PI_EXPR_1@@]', '[read: @@PI_EXPR_0@@]', 'Share session as a secret GitHub gist', 'sessionShareDestination', 'auto', 'gist', 'radius']) assert.equal(ui[source], undefined);
   const current = readFileSync('maintenance/1.3.0/changelog.zh.md', 'utf8');
   for (const token of ['`sessionShareDestination`', '`auto`', '`gist`', '`radius`', '`/v1`', '`--tools +name`/`-name`', '`ctx.ui.custom({ overlay: true })`', '`done()`']) assert.ok(current.includes(token), token);
+});
+test('Pi 1.4.0 reuses unchanged reviewed UI and preserves new announcement APIs and flags', () => {
+  assert.deepEqual(catalog.versions['1.4.0'].ui, catalog.versions['1.3.0'].ui);
+  const current = readFileSync('maintenance/1.4.0/changelog.zh.md', 'utf8');
+  for (const token of ['`models.classify()`', '`images`', '`compat`', '`imageInput`', '`sendImageOptInHeader`', '`reserveTokens`', '`compaction.reserveTokens`', '`PI_CODEMODE_MAX_WORKERS`', '`rg --no-config`', '`managed-install.json`', '`mcp.json`']) assert.ok(current.includes(token), token);
 });
 test('plugin minor and patch versions follow the reviewed Pi release pairing', () => {
   const latest = Object.keys(catalog.versions).map(v => v.split('.').map(Number)).sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0];

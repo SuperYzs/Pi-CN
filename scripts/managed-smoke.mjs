@@ -25,7 +25,9 @@ try {
   for (const name of ['dist', 'package.json', 'CHANGELOG.md']) cpSync(join(original, name), join(root, name), { recursive: true });
   linkPiDependencies(original, root);
   mkdirSync(bin, { recursive: true });
-  writeJSON(join(install, 'managed-install.json'), { kind: 'pi-managed-install', schemaVersion: 1, layout: 'releases-v1' });
+  const marker = join(install, 'managed-install.json');
+  writeJSON(marker, { kind: 'pi-managed-install', schemaVersion: 1, layout: 'releases-v1' });
+  if (version === '1.4.0') writeFileSync(marker, '\uFEFF' + readFileSync(marker, 'utf8'));
   writeFileSync(join(install, 'current-version'), `${version}\n`);
   const js = join(root, 'dist/bundle/cli.js');
   const shellQuote = text => `'${text.replaceAll("'", "'\\''")}'`;
