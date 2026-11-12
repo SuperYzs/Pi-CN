@@ -105,10 +105,24 @@ try {
   const help = run([...flags, '--help']);
   assert.match(help, /用法：/);
   assert.match(help, /选项：/);
-  if (['1.1.0', '1.2.0', '1.3.0', '1.4.0'].includes(p.version())) {
+  if (['1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.5.2'].includes(p.version())) {
     const mcpHelp = run(['mcp', 'login', '--help']);
     assert.match(mcpHelp, /无需启动会话，即可配置、检查 MCP 服务器并登录 OAuth 服务器。/);
-    if (['1.2.0', '1.3.0', '1.4.0'].includes(p.version())) assert.match(mcpHelp, /整个登录过程的时间限制（默认：300）/);
+    if (['1.2.0', '1.3.0', '1.4.0', '1.5.2'].includes(p.version())) assert.match(mcpHelp, /整个登录过程的时间限制（默认：300）/);
+  }
+  if (p.version() === '1.5.2') {
+    const authHelp = run(['auth', '--help']);
+    assert.match(authHelp, /登录|凭据/);
+    for (const token of ['--api-key', '--no-browser', 'logout']) assert.ok(authHelp.includes(token));
+    const { getMissingSessionCwdOptions, formatMissingSessionCwdError } = await import(pathToFileURL(join(copy, 'dist/core/session-cwd.js')).href);
+    const issue = { sessionFile: '/missing/session.jsonl', sessionCwd: '/missing/project', fallbackCwd: '/current/project' };
+    const choices = getMissingSessionCwdOptions(issue);
+    assert.deepEqual(choices.map(option => option.value), ['continue', 'fork', undefined]);
+    for (const choice of choices) assert.match(choice.label, /[\u3400-\u9fff]/);
+    for (const choice of choices.slice(0, 2)) assert.ok(choice.label.includes(issue.fallbackCwd));
+    const error = formatMissingSessionCwdError(issue);
+    for (const value of Object.values(issue)) assert.ok(error.includes(value));
+    assert.match(error, /[\u3400-\u9fff]/);
   }
   assert.equal(run(['--version']).trim(), JSON.parse(readFileSync(join(original, 'package.json'), 'utf8')).version);
   run([...flags, '-e', extension, '--help']);

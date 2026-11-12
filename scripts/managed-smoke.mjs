@@ -27,7 +27,7 @@ try {
   mkdirSync(bin, { recursive: true });
   const marker = join(install, 'managed-install.json');
   writeJSON(marker, { kind: 'pi-managed-install', schemaVersion: 1, layout: 'releases-v1' });
-  if (version === '1.4.0') writeFileSync(marker, '\uFEFF' + readFileSync(marker, 'utf8'));
+  if (['1.4.0', '1.5.2'].includes(version)) writeFileSync(marker, '\uFEFF' + readFileSync(marker, 'utf8'));
   writeFileSync(join(install, 'current-version'), `${version}\n`);
   const js = join(root, 'dist/bundle/cli.js');
   const shellQuote = text => `'${text.replaceAll("'", "'\\''")}'`;

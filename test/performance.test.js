@@ -53,6 +53,40 @@ test('standalone built-in MCP CLI chunks use reviewed SDK display text and resto
   assert.equal(readFileSync(unrelated, 'utf8'), untouched);
 });
 
+test('shared session-folder choices require the new helper and preserve values in SDK and bundle', async (t) => {
+  const { p, root } = fixture(t);
+  mkdirSync(join(root, 'dist/core'), { recursive: true });
+  mkdirSync(join(root, 'dist/bundle/chunks'), { recursive: true });
+  const sdk = join(root, 'dist/core/session-cwd.js');
+  const bundle = join(root, 'dist/bundle/chunks/core-SESSION.js');
+  const old = 'export function formatMissingSessionCwdPrompt(){return "Old session helper";}';
+  writeFileSync(sdk, old);
+  assert.equal(p.inventory().has('Old session helper'), false);
+  const source = 'export function getMissingSessionCwdOptions(issue){return [{label:`Continue in ${issue.fallbackCwd} (asks again next time)`,value:"continue"},{label:`Fork into ${issue.fallbackCwd} (new session ID, original kept)`,value:"fork"},{label:"Cancel",value:undefined}];}';
+  writeFileSync(sdk, source);
+  const bundled = source + '\nclass InteractiveMode {render(){return "Settings";}}';
+  writeFileSync(bundle, bundled);
+  const ui = readJSON('maintenance/1.5.2/ui.zh.json', {});
+  p.catalog.versions['1.0.0'].ui = ui;
+  const inventory = p.inventory();
+  for (const label of ['Continue in @@PI_EXPR_0@@ (asks again next time)', 'Fork into @@PI_EXPR_0@@ (new session ID, original kept)']) assert.ok(inventory.has(label));
+  assert.equal(inventory.has('continue'), false);
+  assert.equal(inventory.has('fork'), false);
+  p.apply();
+  for (const file of [sdk, bundle]) {
+    const patched = readFileSync(file, 'utf8');
+    const { getMissingSessionCwdOptions } = await import('data:text/javascript,' + encodeURIComponent(patched));
+    const options = getMissingSessionCwdOptions({ fallbackCwd: '/current/project' });
+    assert.deepEqual(options.map(option => option.value), ['continue', 'fork', undefined]);
+    for (const option of options) assert.match(option.label, /[\u3400-\u9fff]/);
+    for (const option of options.slice(0, 2)) assert.ok(option.label.includes('/current/project'));
+  }
+  assert.equal(p.apply().cacheHit, true);
+  p.restore();
+  assert.equal(readFileSync(sdk, 'utf8'), source);
+  assert.equal(readFileSync(bundle, 'utf8'), bundled);
+});
+
 test('changed resources, source files and newly discovered files invalidate plans', (t) => {
   const { p, root, file, source } = fixture(t);
   p.apply();

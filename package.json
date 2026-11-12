@@ -1,13 +1,13 @@
 {
   "name": "pi-zh-cn",
-  "version": "0.10.0",
+  "version": "0.11.2",
   "description": "Simplified Chinese UI and release notes for Pi, with reversible core patches and automatic uninstall recovery.",
   "author": "SuperYzs",
   "type": "module",
   "license": "MIT",
   "keywords": ["pi-package", "pi", "i18n", "zh-CN", "chinese"],
   "engines": { "node": ">=22.19.0" },
-  "pi": { "extensions": ["./extensions/index.ts"] },
+  "pi": { "extensions": ["./extensions/index.ts"], "changelogPath": "./CHANGELOG.zh-CN.md" },
   "bin": { "pi-zh-cn": "./bin/pi-zh-cn.js" },
   "files": ["extensions", "lib", "locales", "bin", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "LICENSE"],
   "scripts": {

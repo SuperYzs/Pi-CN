@@ -2,6 +2,15 @@
 
 **English** | [简体中文](CHANGELOG.zh-CN.md)
 
+## 0.11.2
+
+- Support Pi 1.5.2 with 920/948 reviewed UI candidates, including credential commands, device-code login, package updates, and missing-folder session choices; keep technical text and command values unchanged.
+- Translate all 293 bundled releases, including 1.5.0 and 1.5.1, while preserving the previous 290 translations and all previously supported runtime versions.
+- Include the new shared session-folder UI in SDK and bundle patches without changing older candidate inventories or continue/fork/cancel behavior.
+- Review the changed SDK and bundle uninstall entries; retain trust-before-recovery ordering, conflict refusal, managed-launcher recovery, and standalone MCP help.
+- Supply the Chinese package changelog to native Extension Updates through `pi.changelogPath`, while keeping the default repository documents in English.
+- Pair Pi 1.5.2 with Pi-CN 0.11.2 (Pi 1.5.3 → Pi-CN 0.11.3).
+
 ## 0.10.0
 
 - Support Pi 1.4.0 with the same 867/892 reviewed UI candidates as Pi 1.3.0; keep technical text and command examples unchanged.

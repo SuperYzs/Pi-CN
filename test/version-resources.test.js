@@ -13,11 +13,12 @@ const versions = [
   { version: '1.2.0', previous: '1.1.0', history: 288, added: 1, candidates: 889, translated: 864, bundle: 'chunk-TJXZSVTD.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
   { version: '1.3.0', previous: '1.2.0', history: 289, added: 1, candidates: 892, translated: 867, bundle: 'chunk-66G7ITPS.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
   { version: '1.4.0', previous: '1.3.0', history: 290, added: 1, candidates: 892, translated: 867, bundle: 'chunk-MM3LKT73.js', sdk: '14176c5f6a8ba9df57fb2bae52eebb1823b3bd96453200be52978715308ee9eb' },
+  { version: '1.5.2', previous: '1.4.0', history: 293, added: 3, candidates: 948, translated: 920, bundle: 'chunk-VEJDBY3O.js', sdk: '4f80709eed43d5b0eaaa99ff690d3695445e506d76247444e61569fe7eb3cd4a' },
 ];
 for (const { version, previous, history, added, candidates, translated, bundle, sdk = 'cfd718348caadc3b74df206e9af417afb9f409cdd7b508891eb7608c21fade80' } of versions) {
   test(`Pi ${version} is explicitly supported with its own reviewed uninstall entry`, () => {
     assert.doesNotThrow(() => requireVersion(catalog, version));
-    for (const unknown of ['1.0.3', '1.0.4', '1.1.1', '1.2.1', '1.3.1', '1.4.1', '1.5.0']) assert.throws(() => requireVersion(catalog, unknown), /未适配/);
+    for (const unknown of ['1.0.3', '1.0.4', '1.1.1', '1.2.1', '1.3.1', '1.4.1', '1.5.0', '1.5.1', '1.5.3', '1.6.0']) assert.throws(() => requireVersion(catalog, unknown), /未适配/);
     const release = catalog.versions[version];
     assert.equal(release.uiCandidates, candidates);
     assert.equal(release.uiTranslated, translated);
@@ -86,6 +87,18 @@ test('Pi 1.4.0 reuses unchanged reviewed UI and preserves new announcement APIs 
   assert.deepEqual(catalog.versions['1.4.0'].ui, catalog.versions['1.3.0'].ui);
   const current = readFileSync('maintenance/1.4.0/changelog.zh.md', 'utf8');
   for (const token of ['`models.classify()`', '`images`', '`compat`', '`imageInput`', '`sendImageOptInHeader`', '`reserveTokens`', '`compaction.reserveTokens`', '`PI_CODEMODE_MAX_WORKERS`', '`rg --no-config`', '`managed-install.json`', '`mcp.json`']) assert.ok(current.includes(token), token);
+});
+test('Pi 1.5.2 UI covers credentials, package updates and missing-folder session choices', () => {
+  const ui = catalog.versions['1.5.2'].ui;
+  for (const source of ['Continue in @@PI_EXPR_0@@ (asks again next time)', 'Fork into @@PI_EXPR_0@@ (new session ID, original kept)', 'Session cwd does not exist: @@PI_EXPR_0@@', 'Extension Updates']) assert.match(ui[source], /[\u3400-\u9fff]/);
+  const authHelp = Object.keys(ui).find(s => s.includes('auth login <provider>') && s.includes('--no-browser') && !s.startsWith('@@PI_EXPR_0@@ - AI coding assistant'));
+  assert.ok(authHelp);
+  for (const token of ['--api-key', '--no-browser', 'auth logout <provider>']) assert.ok(ui[authHelp].includes(token));
+  const mainHelp = Object.keys(ui).find(s => s.startsWith('@@PI_EXPR_0@@ - AI coding assistant'));
+  assert.ok(ui[mainHelp].includes('PI_SELF_UPDATE_COMMAND'));
+  for (const source of ['continue', 'fork', 'auth login', 'auth logout', '"@@PI_EXPR_0@@ auth login @@PI_EXPR_1@@ --no-browser"']) assert.equal(ui[source], undefined);
+  const history = readFileSync('maintenance/1.5.2/history.zh.md', 'utf8');
+  for (const token of ['`PI_SELF_UPDATE_COMMAND`', '`pi.exec()`', '`maxBuffer`', '`truncated`', '`pi.changelogPath`', '`collapseChangelog`', '`@earendil-works/pi-schema`', '`ctx.switchSession()`', '`--fork`', '`oauth.clientRegistration: "auto"`']) assert.ok(history.includes(token), token);
 });
 test('plugin minor and patch versions follow the reviewed Pi release pairing', () => {
   const latest = Object.keys(catalog.versions).map(v => v.split('.').map(Number)).sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0];
